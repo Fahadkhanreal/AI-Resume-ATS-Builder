@@ -55,23 +55,23 @@ Tasks are organized by user story (P1, P2, P3) to enable independent implementat
 
 ### Authentication & Dashboard Tasks
 
-- [ ] T015 [P] Install Clerk and setup authentication provider in root layout
-- [ ] T016 [P] Create Clerk middleware for protected routes (app/middleware.ts)
-- [ ] T017 [P] Create sign-in page (app/(auth)/sign-in/page.tsx) with Clerk SignIn component
-- [ ] T018 [P] Create sign-up page (app/(auth)/sign-up/page.tsx) with Clerk SignUp component
+- [x] T015 [P] Install Clerk and setup authentication provider in root layout
+- [x] T016 [P] Create Clerk middleware for protected routes (app/middleware.ts)
+- [x] T017 [P] Create sign-in page (app/(auth)/sign-in/page.tsx) with Clerk SignIn component
+- [x] T018 [P] Create sign-up page (app/(auth)/sign-up/page.tsx) with Clerk SignUp component
 - [ ] T019 [P] Create forgot-password page (app/(auth)/forgot-password/page.tsx)
 - [ ] T020 [P] Create reset-password page (app/(auth)/reset-password/page.tsx)
-- [ ] T021 [P] Create dashboard layout (components/layout/DashboardLayout.tsx) with header and sidebar
-- [ ] T022 [P] Create dashboard page (app/dashboard/page.tsx) with My Resumes grid
+- [x] T021 [P] Create dashboard layout (components/layout/DashboardLayout.tsx) with header and sidebar
+- [x] T022 [P] Create dashboard page (app/dashboard/page.tsx) with My Resumes grid
 - [ ] T023 [P] Create ResumeCard component (components/resume/ResumeCard.tsx) for displaying resume previews
 - [ ] T024 [P] Create empty state component (components/common/EmptyState.tsx) for new users
-- [ ] T025 [P] Install Sonner for toast notifications
-- [ ] T026 [P] Create "Create New Resume" button with API call to POST /api/resumes
-- [ ] T027 [P] Create API route for resume creation (app/api/resumes/route.ts)
+- [x] T025 [P] Install Sonner for toast notifications
+- [x] T026 [P] Create "Create New Resume" button with API call to POST /api/resumes
+- [x] T027 [P] Create API route for resume creation (app/api/resumes/route.ts)
 - [ ] T028 [P] Setup Zustand store for resume state (lib/store/resume.store.ts)
 - [ ] T029 [P] Setup Zustand store for UI state (lib/store/ui.store.ts)
 - [ ] T030 [P] Create TypeScript types for Resume, Section, Entry (types/resume.ts)
-- [ ] T031 [P] Create API route for fetching user's resumes (app/api/resumes/list/route.ts)
+- [x] T031 [P] Create API route for fetching user's resumes (app/api/resumes/list/route.ts)
 
 ---
 

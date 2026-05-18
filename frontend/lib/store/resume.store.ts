@@ -5,12 +5,13 @@ interface ResumeStore {
   currentResume: Resume | null;
   resumes: Resume[];
   setCurrentResume: (resume: Resume) => void;
+  updatePersonalInfo: (info: Partial<Resume["personalInfo"]>) => void;
   updateSection: (sectionId: string, updates: Partial<Section>) => void;
   addEntry: (sectionId: string, entry: Entry) => void;
   deleteEntry: (sectionId: string, entryId: string) => void;
   reorderSections: (sections: Section[]) => void;
   setATSScore: (score: number) => void;
-  saveResume: () => Promise<void>;
+  saveResume: (resumeId: string) => Promise<void>;
 }
 
 export const useResumeStore = create<ResumeStore>((set, get) => ({
@@ -19,6 +20,22 @@ export const useResumeStore = create<ResumeStore>((set, get) => ({
 
   setCurrentResume: (resume: Resume) => {
     set({ currentResume: resume });
+  },
+
+  updatePersonalInfo: (info: Partial<Resume["personalInfo"]>) => {
+    set((state) => {
+      if (!state.currentResume) return state;
+      return {
+        currentResume: {
+          ...state.currentResume,
+          personalInfo: {
+            ...state.currentResume.personalInfo,
+            ...info,
+          },
+          updatedAt: new Date(),
+        },
+      };
+    });
   },
 
   updateSection: (sectionId: string, updates: Partial<Section>) => {
@@ -101,12 +118,12 @@ export const useResumeStore = create<ResumeStore>((set, get) => ({
     });
   },
 
-  saveResume: async () => {
+  saveResume: async (resumeId: string) => {
     const state = get();
     if (!state.currentResume) return;
 
     try {
-      const response = await fetch(`/api/resumes/${state.currentResume.id}`, {
+      const response = await fetch(`/api/resumes/${resumeId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(state.currentResume),
