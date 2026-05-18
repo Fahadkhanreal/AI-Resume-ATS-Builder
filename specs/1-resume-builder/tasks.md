@@ -89,23 +89,23 @@ Tasks are organized by user story (P1, P2, P3) to enable independent implementat
 
 ### US1 Tasks
 
-- [ ] T032 [US1] Create Resume Builder Layout component (components/resume/BuilderLayout.tsx) with split-screen design
-- [ ] T033 [US1] Create LivePreview component (components/resume/LivePreview.tsx) for rendering resume preview
-- [ ] T034 [US1] Create SectionList component (components/resume/SectionList.tsx) for left sidebar sections
-- [ ] T035 [US1] Create resume builder page (app/resume/[resumeId]/edit/page.tsx)
-- [ ] T036 [US1] Implement responsive design: desktop (split), tablet (stacked), mobile (bottom sheet)
-- [ ] T037 [US1] Create PersonalInfoForm component (components/resume/forms/PersonalInfoForm.tsx) with React Hook Form + Zod
-- [ ] T038 [US1] Create SummaryEditor component (components/resume/forms/SummaryEditor.tsx) with character count
-- [ ] T039 [US1] Create ExperienceEditor component (components/resume/forms/ExperienceEditor.tsx) with add/edit/delete entries
-- [ ] T040 [US1] Create EducationEditor component (components/resume/forms/EducationEditor.tsx)
-- [ ] T041 [US1] Create SkillsEditor component (components/resume/forms/SkillsEditor.tsx) with tag input
-- [ ] T042 [US1] Create ProjectsEditor component (components/resume/forms/ProjectsEditor.tsx)
-- [ ] T043 [US1] Create CertificationsEditor component (components/resume/forms/CertificationsEditor.tsx)
-- [ ] T044 [US1] Implement form validation using React Hook Form + Zod (lib/utils/validation.ts)
+- [x] T032 [US1] Create Resume Builder Layout component (components/resume/BuilderLayout.tsx) with split-screen design
+- [x] T033 [US1] Create LivePreview component (components/resume/LivePreview.tsx) for rendering resume preview
+- [x] T034 [US1] Create SectionList component (components/resume/SectionList.tsx) for left sidebar sections
+- [x] T035 [US1] Create resume builder page (app/resume/[resumeId]/edit/page.tsx)
+- [x] T036 [US1] Implement responsive design: desktop (split), tablet (stacked), mobile (bottom sheet)
+- [x] T037 [US1] Create PersonalInfoForm component (components/resume/forms/PersonalInfoForm.tsx) with React Hook Form + Zod
+- [x] T038 [US1] Create SummaryEditor component (components/resume/forms/SummaryEditor.tsx) with character count
+- [x] T039 [US1] Create ExperienceEditor component (components/resume/forms/ExperienceEditor.tsx) with add/edit/delete entries
+- [x] T040 [US1] Create EducationEditor component (components/resume/forms/EducationEditor.tsx)
+- [x] T041 [US1] Create SkillsEditor component (components/resume/forms/SkillsEditor.tsx) with tag input
+- [x] T042 [US1] Create ProjectsEditor component (components/resume/forms/ProjectsEditor.tsx)
+- [x] T043 [US1] Create CertificationsEditor component (components/resume/forms/CertificationsEditor.tsx)
+- [x] T044 [US1] Implement form validation using React Hook Form + Zod (lib/utils/validation.ts)
 - [ ] T045 [US1] Implement real-time preview updates when form changes (< 200ms debounce)
-- [ ] T046 [US1] Implement auto-save functionality (debounced every 3 seconds) (lib/hooks/useAutoSave.ts)
-- [ ] T047 [US1] Create API route for saving resume (app/api/resumes/[resumeId]/route.ts)
-- [ ] T048 [US1] Create API route for fetching resume (app/api/resumes/[resumeId]/get/route.ts)
+- [x] T046 [US1] Implement auto-save functionality (debounced every 3 seconds) (lib/hooks/useAutoSave.ts)
+- [x] T047 [US1] Create API route for saving resume (app/api/resumes/[resumeId]/route.ts)
+- [x] T048 [US1] Create API route for fetching resume (app/api/resumes/[resumeId]/get/route.ts)
 - [ ] T049 [US1] Implement error boundaries for form sections (components/common/ErrorBoundary.tsx)
 - [ ] T050 [US1] Create loading skeletons for form sections (components/common/LoadingState.tsx)
 
