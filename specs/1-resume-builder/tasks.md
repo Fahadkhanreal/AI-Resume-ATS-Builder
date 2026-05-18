@@ -36,13 +36,13 @@ Tasks are organized by user story (P1, P2, P3) to enable independent implementat
 - [x] T004 Configure next-themes for dark mode support
 - [x] T005 Create folder structure per implementation plan (app/, components/, lib/, hooks/, types/, tests/)
 - [x] T006 Setup ESLint with TypeScript support and strict rules
-- [ ] T007 Setup Prettier for code formatting
-- [ ] T008 Setup Husky pre-commit hooks for linting
+- [x] T007 Setup Prettier for code formatting
+- [x] T008 Setup Husky pre-commit hooks for linting
 - [x] T009 Create .env.example with required variables (NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY, CLERK_SECRET_KEY, NEXT_PUBLIC_GEMINI_API_KEY, DATABASE_URL)
-- [ ] T010 Setup Vercel deployment configuration (vercel.json)
+- [x] T010 Setup Vercel deployment configuration (vercel.json)
 - [x] T011 Create root layout (app/layout.tsx) with dark mode provider and global styles
 - [x] T012 Create landing page (app/page.tsx) with basic design
-- [ ] T013 Initialize Git repository with initial commit
+- [x] T013 Initialize Git repository with initial commit
 - [x] T014 Setup TypeScript types directory (types/index.ts) with base types
 
 ---
