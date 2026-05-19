@@ -5,7 +5,7 @@ import { useResumeStore } from "@/lib/store/resume.store";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Wand2 } from "lucide-react";
+import { AIImproveButton } from "@/components/resume/AIImproveButton";
 
 const MAX_SUMMARY_LENGTH = 500;
 
@@ -13,7 +13,6 @@ export default function SummaryEditor() {
   const { currentResume } = useResumeStore();
   const [summary, setSummary] = useState(currentResume?.summary || "");
   const [charCount, setCharCount] = useState(summary.length);
-  const [aiLoading, setAiLoading] = useState(false);
 
   useEffect(() => {
     setCharCount(summary.length);
@@ -24,14 +23,8 @@ export default function SummaryEditor() {
     setSummary(value);
   };
 
-  const handleAiImprove = async () => {
-    setAiLoading(true);
-    try {
-      // TODO: Call AI improvement API
-      console.log("AI improve summary");
-    } finally {
-      setAiLoading(false);
-    }
+  const handleAIAccept = (improvedText: string) => {
+    setSummary(improvedText);
   };
 
   return (
@@ -57,17 +50,13 @@ export default function SummaryEditor() {
         <span className="text-slate-400">
           {charCount} / {MAX_SUMMARY_LENGTH} characters
         </span>
-        <Button
-          onClick={handleAiImprove}
-          disabled={aiLoading || !summary}
-          variant="outline"
-          size="sm"
-          className="gap-2"
-        >
-          <Wand2 size={16} />
-          {aiLoading ? "Improving..." : "Improve with AI"}
-        </Button>
       </div>
+
+      <AIImproveButton
+        text={summary}
+        context="summary"
+        onAccept={handleAIAccept}
+      />
 
       <Button type="submit" className="w-full">
         Save Summary

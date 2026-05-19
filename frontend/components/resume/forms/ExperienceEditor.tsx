@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Trash2, Wand2 } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
+import { AIImproveButton } from "@/components/resume/AIImproveButton";
 
 interface ExperienceEntry {
   id: string;
@@ -225,8 +226,14 @@ export default function ExperienceEditor() {
                   size="sm"
                   className="w-full gap-2"
                 >
-                  <Wand2 size={14} />
-                  Improve with AI
+                  <AIImproveButton
+                    text={entry.bullets.join(", ")}
+                    context="experience"
+                    onAccept={(improved) => {
+                      const bullets = improved.split(",").map((b) => b.trim());
+                      updateEntry(entry.id, { bullets });
+                    }}
+                  />
                 </Button>
               </div>
             )}

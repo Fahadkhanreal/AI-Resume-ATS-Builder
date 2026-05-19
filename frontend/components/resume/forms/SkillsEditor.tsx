@@ -5,13 +5,13 @@ import { useResumeStore } from "@/lib/store/resume.store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Trash2, Wand2, X } from "lucide-react";
+import { Plus, X } from "lucide-react";
+import { AIImproveButton } from "@/components/resume/AIImproveButton";
 
 export default function SkillsEditor() {
   const { currentResume } = useResumeStore();
   const [skills, setSkills] = useState<string[]>(currentResume?.skills || []);
   const [inputValue, setInputValue] = useState("");
-  const [aiLoading, setAiLoading] = useState(false);
 
   const addSkill = () => {
     if (inputValue.trim() && !skills.includes(inputValue.trim())) {
@@ -31,30 +31,18 @@ export default function SkillsEditor() {
     }
   };
 
-  const handleAiSuggest = async () => {
-    setAiLoading(true);
-    try {
-      // TODO: Call AI skill suggestion API
-      console.log("AI suggest skills");
-    } finally {
-      setAiLoading(false);
-    }
+  const handleAIAccept = (improvedText: string) => {
+    const newSkills = improvedText
+      .split(",")
+      .map((s) => s.trim())
+      .filter((s) => s && !skills.includes(s));
+    setSkills([...skills, ...newSkills]);
   };
 
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <Label className="text-slate-300">Skills</Label>
-        <Button
-          onClick={handleAiSuggest}
-          disabled={aiLoading}
-          size="sm"
-          variant="outline"
-          className="gap-2"
-        >
-          <Wand2 size={16} />
-          {aiLoading ? "Suggesting..." : "AI Suggestions"}
-        </Button>
       </div>
 
       <div className="flex gap-2">
@@ -70,6 +58,12 @@ export default function SkillsEditor() {
           Add
         </Button>
       </div>
+
+      <AIImproveButton
+        text={skills.join(", ")}
+        context="skills"
+        onAccept={handleAIAccept}
+      />
 
       <div className="flex flex-wrap gap-2">
         {skills.map((skill, index) => (
