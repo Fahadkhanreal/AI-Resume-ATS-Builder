@@ -150,16 +150,16 @@ Tasks are organized by user story (P1, P2, P3) to enable independent implementat
 
 ### US3 Tasks
 
-- [ ] T061 [P] Create AI service layer (lib/ai.ts) with Gemini integration
-- [ ] T062 [US3] Create AIImproveButton component (components/resume/AIImproveButton.tsx) - reusable across sections
-- [ ] T063 [US3] Implement "Improve Summary" feature with AI suggestions
-- [ ] T064 [US3] Implement "Improve Experience bullets" feature with action verbs and metrics
-- [ ] T065 [US3] Implement "Skills optimization" feature with related skills suggestions
-- [ ] T066 [US3] Add loading states for AI calls (spinner, skeleton)
-- [ ] T067 [US3] Add error handling and fallback UI when AI service unavailable
+- [x] T061 [P] Create AI service layer (lib/ai.ts) with Gemini integration
+- [x] T062 [US3] Create AIImproveButton component (components/resume/AIImproveButton.tsx) - reusable across sections
+- [x] T063 [US3] Implement "Improve Summary" feature with AI suggestions
+- [x] T064 [US3] Implement "Improve Experience bullets" feature with action verbs and metrics
+- [x] T065 [US3] Implement "Skills optimization" feature with related skills suggestions
+- [x] T066 [US3] Add loading states for AI calls (spinner, skeleton)
+- [x] T067 [US3] Add error handling and fallback UI when AI service unavailable
 - [ ] T068 [US3] Implement rate limiting for AI calls (prevent abuse)
-- [ ] T069 [US3] Create API route for AI improvements (app/api/ai/improve/route.ts)
-- [ ] T070 [US3] Add acceptance/rejection logic for AI suggestions
+- [x] T069 [US3] Create API route for AI improvements (app/api/ai/improve/route.ts)
+- [x] T070 [US3] Add acceptance/rejection logic for AI suggestions
 - [ ] T071 [US3] Implement retry logic for failed AI calls
 
 ---
@@ -177,14 +177,14 @@ Tasks are organized by user story (P1, P2, P3) to enable independent implementat
 
 ### US4 Tasks
 
-- [ ] T072 [P] Create ATS scoring logic (lib/ats.ts) with keyword analysis and format validation
-- [ ] T073 [US4] Create ATSScoreCard component (components/resume/ATSScoreCard.tsx) with score display
-- [ ] T074 [US4] Implement ATS score calculation algorithm (keyword density, format, completeness)
+- [x] T072 [P] Create ATS scoring logic (lib/ats.ts) with keyword analysis and format validation
+- [x] T073 [US4] Create ATSScoreCard component (components/resume/ATSScoreCard.tsx) with score display
+- [x] T074 [US4] Implement ATS score calculation algorithm (keyword density, format, completeness)
 - [ ] T075 [US4] Create suggestions panel (components/resume/ATSSuggestionsPanel.tsx)
 - [ ] T076 [US4] Implement suggestion click → highlight relevant section in editor
 - [ ] T077 [US4] Create API route for ATS scoring (app/api/ats/score/route.ts)
-- [ ] T078 [US4] Implement score refresh on resume changes (debounced)
-- [ ] T079 [US4] Add color coding for score ranges (red/yellow/green)
+- [x] T078 [US4] Implement score refresh on resume changes (debounced)
+- [x] T079 [US4] Add color coding for score ranges (red/yellow/green)
 
 ---
 
