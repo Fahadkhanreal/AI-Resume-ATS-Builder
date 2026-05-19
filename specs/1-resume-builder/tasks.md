@@ -124,15 +124,15 @@ Tasks are organized by user story (P1, P2, P3) to enable independent implementat
 
 ### US2 Tasks
 
-- [ ] T051 [P] [US2] Install dnd-kit library and dependencies
-- [ ] T052 [US2] Create DraggableSection component (components/resume/DraggableSection.tsx) with dnd-kit
-- [ ] T053 [US2] Create DragDropEditor wrapper (components/resume/DragDropEditor.tsx) for managing drag state
-- [ ] T054 [US2] Implement section reordering logic in Zustand store
-- [ ] T055 [US2] Implement visual feedback during drag (highlight, placeholder)
-- [ ] T056 [US2] Create "Add New Section" button and modal (components/resume/AddSectionModal.tsx)
+- [x] T051 [P] [US2] Install dnd-kit library and dependencies
+- [x] T052 [US2] Create DraggableSection component (components/resume/DraggableSection.tsx) with dnd-kit
+- [x] T053 [US2] Create DragDropEditor wrapper (components/resume/DragDropEditor.tsx) for managing drag state
+- [x] T054 [US2] Implement section reordering logic in Zustand store
+- [x] T055 [US2] Implement visual feedback during drag (highlight, placeholder)
+- [x] T056 [US2] Create "Add New Section" button and modal (components/resume/AddSectionModal.tsx)
 - [ ] T057 [US2] Implement delete section functionality with confirmation
 - [ ] T058 [US2] Implement duplicate section functionality
-- [ ] T059 [US2] Create collapsible section headers (components/resume/SectionHeader.tsx)
+- [x] T059 [US2] Create collapsible section headers (components/resume/SectionHeader.tsx)
 - [ ] T060 [US2] Ensure preview updates instantly when sections reorder (< 200ms)
 
 ---

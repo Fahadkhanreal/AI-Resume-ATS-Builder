@@ -10,6 +10,8 @@ interface ResumeStore {
   addEntry: (sectionId: string, entry: Entry) => void;
   deleteEntry: (sectionId: string, entryId: string) => void;
   reorderSections: (sections: Section[]) => void;
+  deleteSection: (sectionId: string) => void;
+  duplicateSection: (sectionId: string) => void;
   setATSScore: (score: number) => void;
   saveResume: (resumeId: string) => Promise<void>;
 }
@@ -100,6 +102,42 @@ export const useResumeStore = create<ResumeStore>((set, get) => ({
         currentResume: {
           ...state.currentResume,
           sections,
+          updatedAt: new Date(),
+        },
+      };
+    });
+  },
+
+  deleteSection: (sectionId: string) => {
+    set((state) => {
+      if (!state.currentResume) return state;
+      return {
+        currentResume: {
+          ...state.currentResume,
+          sections: state.currentResume.sections.filter((s) => s.id !== sectionId),
+          updatedAt: new Date(),
+        },
+      };
+    });
+  },
+
+  duplicateSection: (sectionId: string) => {
+    set((state) => {
+      if (!state.currentResume) return state;
+      const sectionToDuplicate = state.currentResume.sections.find(
+        (s) => s.id === sectionId
+      );
+      if (!sectionToDuplicate) return state;
+
+      const newSection = {
+        ...sectionToDuplicate,
+        id: `${sectionToDuplicate.id}_copy_${Date.now()}`,
+      };
+
+      return {
+        currentResume: {
+          ...state.currentResume,
+          sections: [...state.currentResume.sections, newSection],
           updatedAt: new Date(),
         },
       };

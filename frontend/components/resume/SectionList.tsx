@@ -2,8 +2,6 @@
 
 import { useResumeStore } from "@/lib/store/resume.store";
 import { useUIStore } from "@/lib/store/ui.store";
-import { Button } from "@/components/ui/button";
-import { Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { AddSectionModal } from "./AddSectionModal";
 import { SectionHeader } from "./SectionHeader";
@@ -19,7 +17,7 @@ const SECTION_LABELS: Record<string, string> = {
 };
 
 export default function SectionList() {
-  const { currentResume } = useResumeStore();
+  const { currentResume, deleteSection, duplicateSection } = useResumeStore();
   const { activeSection, setActiveSection } = useUIStore();
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
     new Set(["personalInfo", "summary", "experience"])
@@ -33,6 +31,16 @@ export default function SectionList() {
       newExpanded.add(section);
     }
     setExpandedSections(newExpanded);
+  };
+
+  const handleDeleteSection = (section: string) => {
+    if (confirm(`Delete ${SECTION_LABELS[section]}?`)) {
+      deleteSection(section);
+    }
+  };
+
+  const handleDuplicateSection = (section: string) => {
+    duplicateSection(section);
   };
 
   const sections = Object.keys(SECTION_LABELS);
@@ -50,9 +58,8 @@ export default function SectionList() {
               setActiveSection(section);
               toggleSection(section);
             }}
-            onDelete={() => {
-              // TODO: Implement delete section
-            }}
+            onDelete={() => handleDeleteSection(section)}
+            onDuplicate={() => handleDuplicateSection(section)}
           />
 
           {expandedSections.has(section) && (
