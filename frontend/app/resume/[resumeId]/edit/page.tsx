@@ -13,8 +13,11 @@ import EducationEditor from "@/components/resume/forms/EducationEditor";
 import SkillsEditor from "@/components/resume/forms/SkillsEditor";
 import ProjectsEditor from "@/components/resume/forms/ProjectsEditor";
 import CertificationsEditor from "@/components/resume/forms/CertificationsEditor";
+import { ErrorBoundary } from "@/components/common/ErrorBoundary";
+import { FormSectionSkeleton, PreviewSkeleton } from "@/components/common/LoadingState";
 import { useResumeStore } from "@/lib/store/resume.store";
 import { useUIStore } from "@/lib/store/ui.store";
+import { usePreviewUpdate } from "@/lib/hooks/usePreviewUpdate";
 import { Button } from "@/components/ui/button";
 import { Save } from "lucide-react";
 
@@ -27,6 +30,8 @@ export default function ResumeBuilderPage() {
   const { activeSection } = useUIStore();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
+  usePreviewUpdate(200);
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -63,9 +68,9 @@ export default function ResumeBuilderPage() {
 
   if (!isLoaded || loading) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <p className="text-slate-400">Loading resume...</p>
-      </div>
+      <BuilderLayout preview={<PreviewSkeleton />}>
+        <FormSectionSkeleton />
+      </BuilderLayout>
     );
   }
 
@@ -78,9 +83,7 @@ export default function ResumeBuilderPage() {
   }
 
   return (
-    <BuilderLayout
-      preview={<LivePreview />}
-    >
+    <BuilderLayout preview={<LivePreview />}>
       <div className="space-y-6">
         {/* Top Action Bar */}
         <div className="flex justify-between items-center sticky top-0 bg-slate-900 z-10 pb-4">
@@ -95,20 +98,24 @@ export default function ResumeBuilderPage() {
         </div>
 
         {/* Sections Sidebar */}
-        <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700">
-          <SectionList />
-        </div>
+        <ErrorBoundary>
+          <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700">
+            <SectionList />
+          </div>
+        </ErrorBoundary>
 
         {/* Active Section Editor */}
-        <div className="bg-slate-800/50 rounded-lg p-6 border border-slate-700">
-          {activeSection === "personalInfo" && <PersonalInfoForm />}
-          {activeSection === "summary" && <SummaryEditor />}
-          {activeSection === "experience" && <ExperienceEditor />}
-          {activeSection === "education" && <EducationEditor />}
-          {activeSection === "skills" && <SkillsEditor />}
-          {activeSection === "projects" && <ProjectsEditor />}
-          {activeSection === "certifications" && <CertificationsEditor />}
-        </div>
+        <ErrorBoundary>
+          <div className="bg-slate-800/50 rounded-lg p-6 border border-slate-700">
+            {activeSection === "personalInfo" && <PersonalInfoForm />}
+            {activeSection === "summary" && <SummaryEditor />}
+            {activeSection === "experience" && <ExperienceEditor />}
+            {activeSection === "education" && <EducationEditor />}
+            {activeSection === "skills" && <SkillsEditor />}
+            {activeSection === "projects" && <ProjectsEditor />}
+            {activeSection === "certifications" && <CertificationsEditor />}
+          </div>
+        </ErrorBoundary>
       </div>
     </BuilderLayout>
   );
