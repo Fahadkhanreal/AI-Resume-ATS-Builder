@@ -130,10 +130,10 @@ Tasks are organized by user story (P1, P2, P3) to enable independent implementat
 - [x] T054 [US2] Implement section reordering logic in Zustand store
 - [x] T055 [US2] Implement visual feedback during drag (highlight, placeholder)
 - [x] T056 [US2] Create "Add New Section" button and modal (components/resume/AddSectionModal.tsx)
-- [ ] T057 [US2] Implement delete section functionality with confirmation
-- [ ] T058 [US2] Implement duplicate section functionality
+- [x] T057 [US2] Implement delete section functionality with confirmation
+- [x] T058 [US2] Implement duplicate section functionality
 - [x] T059 [US2] Create collapsible section headers (components/resume/SectionHeader.tsx)
-- [ ] T060 [US2] Ensure preview updates instantly when sections reorder (< 200ms)
+- [x] T060 [US2] Ensure preview updates instantly when sections reorder (< 200ms)
 
 ---
 
