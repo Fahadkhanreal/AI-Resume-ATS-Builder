@@ -1,466 +1,312 @@
-# Backend Implementation Tasks: AI Resume + ATS Builder
+# Backend Implementation Tasks - AI Resume + ATS Builder
 
-**Feature Branch**: `1-resume-builder`  
-**Status**: Ready for Implementation  
-**Based On**: backend-plan.md
-
----
-
-## Phase 1: Database & Authentication Setup
-
-### Task 1.1: Setup Prisma Schema
-**Priority**: P0 (Blocker)  
-**Estimated**: 1-2 hours  
-**Dependencies**: None
-
-**Description**:
-Set up Prisma ORM with PostgreSQL connection to Neon database. Create User and Resume models with proper relationships and indexes.
-
-**Acceptance Criteria**:
-- [ ] Prisma installed and configured
-- [ ] `.env.local` has `DATABASE_URL` pointing to Neon
-- [ ] `schema.prisma` contains User and Resume models
-- [ ] User model has: id, clerkId (unique), email (unique), name, resumes relation, timestamps
-- [ ] Resume model has: id, userId (FK), title, data (JSON), templateId, atsScore, isPublic, lastDownloaded, timestamps
-- [ ] Index on Resume.userId for query performance
-- [ ] `prisma generate` runs without errors
-- [ ] Schema validates with `prisma validate`
-
-**Implementation Notes**:
-- Use CUID for primary keys
-- Resume.data is JSON type to store flexible resume structure
-- Add cascade delete on User-Resume relationship
-- Neon connection string format: `postgresql://user:password@host/database`
-
-**Files to Create/Modify**:
-- `prisma/schema.prisma` (create)
-- `.env.local` (update with DATABASE_URL)
+**Feature:** 1-resume-builder  
+**Spec Reference:** `specs/1-resume-builder/backend-spec.md`  
+**Plan Reference:** `specs/1-resume-builder/implementation-plan.md`  
+**Status:** Ready for Execution  
+**Total Estimated Time:** 3.5-4 weeks
 
 ---
 
-### Task 1.2: Create Database Migrations
-**Priority**: P0 (Blocker)  
-**Estimated**: 30 minutes  
-**Dependencies**: Task 1.1
+## Phase 1: Setup & Database Foundation
 
-**Description**:
-Generate and run Prisma migrations to create database tables in Neon PostgreSQL.
+**Goal:** Initialize backend infrastructure and database connection  
+**Deliverable:** Working Prisma setup with Neon PostgreSQL  
+**Independent Test:** `npx prisma db push` succeeds, health check endpoint returns 200
 
-**Acceptance Criteria**:
-- [ ] Migration file created: `prisma/migrations/[timestamp]_init/migration.sql`
-- [ ] Migration contains CREATE TABLE for users and resumes
-- [ ] Migration includes indexes on userId
-- [ ] `prisma migrate deploy` runs successfully
-- [ ] Tables exist in Neon database (verify via Neon console)
-- [ ] No migration errors or warnings
+### Setup Tasks
 
-**Implementation Notes**:
-- Run `prisma migrate dev --name init` to create migration
-- Verify migration SQL before deploying
-- Test migration is reversible with `prisma migrate resolve`
-
-**Files to Create/Modify**:
-- `prisma/migrations/` (auto-generated)
+- [ ] T001 Install Prisma and dependencies in `frontend/package.json`
+- [ ] T002 Create `.env.local` with database connection strings (DATABASE_URL, DATABASE_URL_UNPOOLED)
+- [ ] T003 Create `frontend/prisma/schema.prisma` with User and Resume models
+- [ ] T004 Run `npx prisma migrate dev --name init` to create database tables
+- [ ] T005 Create `frontend/lib/db.ts` - Prisma Client singleton export
+- [ ] T006 Create `frontend/app/api/health/route.ts` - Health check endpoint
+- [ ] T007 Create `.env.example` with all required environment variables
+- [ ] T008 Test database connection: `npx prisma db push` succeeds
 
 ---
 
-### Task 1.3: Setup Clerk Authentication Middleware
-**Priority**: P0 (Blocker)  
-**Estimated**: 1 hour  
-**Dependencies**: Task 1.1
+## Phase 2: Authentication & Authorization Foundation
 
-**Description**:
-Create Next.js middleware to protect API routes and extract user context from Clerk authentication.
+**Goal:** Setup Clerk authentication and user management  
+**Deliverable:** User sync working, auth middleware protecting routes  
+**Independent Test:** New Clerk user automatically created in database, protected routes return 401 without auth
 
-**Acceptance Criteria**:
-- [ ] `middleware.ts` exists in project root
-- [ ] Middleware protects `/api/resumes/*` routes
-- [ ] Middleware protects `/dashboard` route
-- [ ] Middleware allows `/api/templates` (public)
-- [ ] Middleware allows `/api/auth/webhook` (webhook secret)
-- [ ] `auth()` function available in API routes
-- [ ] `userId` extractable from `auth().userId`
-- [ ] Unauthenticated requests return 401 Unauthorized
-- [ ] Middleware doesn't block `/sign-in` or `/sign-up`
+### Authentication Tasks
 
-**Implementation Notes**:
-- Use `@clerk/nextjs` middleware
-- Pattern: `const { userId } = auth(); if (!userId) return unauthorized();`
-- Clerk session available in both Route Handlers and Server Actions
-
-**Files to Create/Modify**:
-- `middleware.ts` (create)
+- [ ] T009 Create `frontend/middleware.ts` - Clerk auth middleware protecting `/api/resumes/*` and `/dashboard`
+- [ ] T010 Create `frontend/lib/auth.ts` - Auth helper functions (getCurrentUserId, getCurrentUser)
+- [ ] T011 Create `frontend/app/api/auth/webhook/route.ts` - Clerk webhook handler for user sync
+- [ ] T012 Install `svix` package for webhook signature verification
+- [ ] T013 Configure Clerk webhook in Clerk dashboard pointing to `/api/auth/webhook`
+- [ ] T014 Test auth flow: Sign up new user, verify created in database
 
 ---
 
-### Task 1.4: Create Clerk Webhook Handler
-**Priority**: P1  
-**Estimated**: 1 hour  
-**Dependencies**: Task 1.1, Task 1.3
+## Phase 3: Error Handling & Validation Utilities
 
-**Description**:
-Implement webhook endpoint to sync Clerk user events (user.created, user.updated, user.deleted) with database.
+**Goal:** Establish consistent error handling and input validation patterns  
+**Deliverable:** Reusable error handlers and Zod schemas  
+**Independent Test:** Error responses follow spec format, validation rejects invalid input
 
-**Acceptance Criteria**:
-- [ ] `POST /api/auth/webhook` endpoint exists
-- [ ] Webhook verifies Clerk signature using `svix` library
-- [ ] On `user.created`: Create User record in database
-- [ ] On `user.updated`: Update User record (email, name)
-- [ ] On `user.deleted`: Delete User record (cascade deletes resumes)
-- [ ] Webhook returns 200 OK on success
-- [ ] Webhook returns 400 on invalid signature
-- [ ] Webhook logs all events for debugging
-- [ ] Webhook configured in Clerk dashboard
+### Utility Tasks
 
-**Implementation Notes**:
-- Use `svix` for webhook verification
-- Extract clerkId, email, firstName, lastName from webhook payload
-- Handle idempotency (same event fired multiple times)
-
-**Files to Create/Modify**:
-- `app/api/auth/webhook/route.ts` (create)
+- [ ] T015 Create `frontend/lib/errors/api-error.ts` - Custom ApiError class
+- [ ] T016 Create `frontend/lib/errors/handlers.ts` - Error response helpers (unauthorized, forbidden, notFound, etc.)
+- [ ] T017 Create `frontend/lib/schemas/resume.ts` - Zod schemas for resume validation
+- [ ] T018 Create `frontend/lib/schemas/ai.ts` - Zod schemas for AI endpoint validation
+- [ ] T019 Create `frontend/types/resume.ts` - TypeScript types for resume data structure
 
 ---
 
-## Phase 2: Core CRUD Endpoints
+## Phase 4: Resume CRUD Operations (User Story 1)
 
-### Task 2.1: GET /api/resumes (List All User Resumes)
-**Priority**: P0  
-**Estimated**: 1 hour  
-**Dependencies**: Task 1.3
+**Goal:** Implement core resume management functionality  
+**User Story:** User can create, read, update, delete resumes with real-time preview  
+**Deliverable:** All CRUD endpoints working with proper user isolation  
+**Independent Test:** User can create resume, see it in list, update it, delete it; User B cannot access User A's resume
 
-**Description**:
-Implement endpoint to fetch all resumes for authenticated user with pagination support.
+### CRUD Implementation Tasks
 
-**Acceptance Criteria**:
-- [ ] Endpoint returns 200 with array of resumes
-- [ ] Only returns resumes owned by authenticated user
-- [ ] Supports pagination: `?page=1&limit=10`
-- [ ] Returns: id, title, templateId, atsScore, createdAt, updatedAt
-- [ ] Does NOT return full resume.data (too large)
-- [ ] Sorted by createdAt descending (newest first)
-- [ ] Returns 401 if unauthenticated
-- [ ] Returns empty array if no resumes
+- [ ] T020 [P] [US1] Create `frontend/app/api/resumes/route.ts` - GET (list) and POST (create) handlers
+- [ ] T021 [P] [US1] Create `frontend/app/api/resumes/[resumeId]/route.ts` - GET, PATCH, DELETE handlers
+- [ ] T022 [P] [US1] Create `frontend/app/api/resumes/[resumeId]/duplicate/route.ts` - Duplicate endpoint
+- [ ] T023 [US1] Create `frontend/lib/resume-utils.ts` - Resume utility functions (default structure, validation)
+- [ ] T024 [US1] Test all CRUD endpoints with Postman/Thunder Client
+- [ ] T025 [US1] Test user isolation: Verify User B cannot access User A's resume
 
-**Response Format**:
-```json
-{
-  "success": true,
-  "data": [
-    {
-      "id": "cuid123",
-      "title": "My Resume",
-      "templateId": "modern",
-      "atsScore": 85,
-      "createdAt": "2026-05-19T10:00:00Z",
-      "updatedAt": "2026-05-19T10:00:00Z"
-    }
-  ],
-  "pagination": {
-    "page": 1,
-    "limit": 10,
-    "total": 5
-  }
-}
+---
+
+## Phase 5: Resume Data Structure & Defaults
+
+**Goal:** Define and implement resume data schema  
+**Deliverable:** Default resume structure, type safety  
+**Independent Test:** New resume has all required sections, data structure matches schema
+
+### Data Structure Tasks
+
+- [ ] T026 [P] Create default resume template in `frontend/lib/resume-utils.ts`
+- [ ] T027 [P] Create resume data sanitization functions in `frontend/lib/resume-utils.ts`
+- [ ] T028 Create `frontend/lib/resume-validator.ts` - Resume data validation logic
+- [ ] T029 Test default resume structure: New resume has all sections
+
+---
+
+## Phase 6: AI Integration Core (User Story 2)
+
+**Goal:** Setup Gemini AI service and structured responses  
+**User Story:** User can improve resume content with AI suggestions  
+**Deliverable:** Gemini service working with JSON mode, rate limiting active  
+**Independent Test:** AI endpoint returns structured JSON response, rate limiting blocks 11th request
+
+### AI Core Tasks
+
+- [ ] T030 [P] Install `@google/generative-ai` package
+- [ ] T031 [P] Install `@upstash/ratelimit` and `@upstash/redis` packages
+- [ ] T032 Create `frontend/lib/ai/gemini.ts` - Gemini service layer with JSON mode
+- [ ] T033 Create `frontend/lib/ai/prompts.ts` - Prompt templates for each AI task
+- [ ] T034 Create `frontend/lib/ai/parser.ts` - JSON response parser and validator
+- [ ] T035 Create `frontend/lib/rate-limit.ts` - Rate limiting helper (10 requests/min per user)
+- [ ] T036 Test Gemini connection: Call API and verify JSON response
+
+---
+
+## Phase 7: AI Improvement Endpoints (User Story 2)
+
+**Goal:** Implement AI-powered resume improvement endpoints  
+**User Story:** User can improve summary, experience, skills with AI  
+**Deliverable:** All AI endpoints working with rate limiting  
+**Independent Test:** Each endpoint returns suggestions, rate limiting enforced
+
+### AI Endpoints Tasks
+
+- [ ] T037 [P] [US2] Create `frontend/app/api/resumes/[id]/ai/summary/route.ts` - Improve summary
+- [ ] T038 [P] [US2] Create `frontend/app/api/resumes/[id]/ai/experience/route.ts` - Improve experience
+- [ ] T039 [P] [US2] Create `frontend/app/api/resumes/[id]/ai/skills/route.ts` - Optimize skills
+- [ ] T040 [US2] Test all AI endpoints with sample data
+- [ ] T041 [US2] Test rate limiting: Verify 11th request returns 429
+
+---
+
+## Phase 8: ATS Score Engine (User Story 3)
+
+**Goal:** Implement ATS scoring and analysis  
+**User Story:** User can check ATS score and get improvement suggestions  
+**Deliverable:** ATS score calculation working, suggestions generated  
+**Independent Test:** Resume returns ATS score 0-100 with breakdown and suggestions
+
+### ATS Scoring Tasks
+
+- [ ] T042 [P] Create `frontend/lib/ats/keyword-analyzer.ts` - Keyword extraction and matching
+- [ ] T043 [P] Create `frontend/lib/ats/readability.ts` - Readability score calculation
+- [ ] T044 Create `frontend/lib/ats/scorer.ts` - Main ATS scoring algorithm (hybrid approach)
+- [ ] T045 Create `frontend/app/api/resumes/[id]/ai/ats-score/route.ts` - ATS score endpoint
+- [ ] T046 Test ATS scoring: Verify score calculation and suggestions
+
+---
+
+## Phase 9: Job Match Analysis (User Story 4)
+
+**Goal:** Implement job description matching  
+**User Story:** User can analyze resume match against job description  
+**Deliverable:** Job match endpoint working with keyword analysis  
+**Independent Test:** Endpoint returns match percentage and missing keywords
+
+### Job Match Tasks
+
+- [ ] T047 [P] Create `frontend/lib/job-match/analyzer.ts` - Job description analysis
+- [ ] T048 Create `frontend/app/api/resumes/[id]/ai/job-match/route.ts` - Job match endpoint
+- [ ] T049 Test job matching: Verify match percentage and keyword suggestions
+
+---
+
+## Phase 10: Templates Management (User Story 5)
+
+**Goal:** Implement resume templates  
+**User Story:** User can select from multiple resume templates  
+**Deliverable:** Templates API working, templates selectable  
+**Independent Test:** GET /api/templates returns list of templates
+
+### Templates Tasks
+
+- [ ] T050 Create `frontend/lib/templates/index.ts` - Template definitions (Modern, Classic, Minimal, Corporate, Tech)
+- [ ] T051 Create `frontend/app/api/templates/route.ts` - Get templates endpoint
+- [ ] T052 Test templates: Verify all templates returned with correct structure
+
+---
+
+## Phase 11: PDF Generation (User Story 6)
+
+**Goal:** Implement PDF export functionality  
+**User Story:** User can download resume as PDF  
+**Deliverable:** PDF generation working, multiple templates supported  
+**Independent Test:** PDF endpoint returns valid PDF file
+
+### PDF Generation Tasks
+
+- [ ] T053 [P] Install `puppeteer` package
+- [ ] T054 Create `frontend/lib/pdf/generator.ts` - PDF generation service
+- [ ] T055 Create `frontend/lib/pdf/templates.ts` - PDF template rendering
+- [ ] T056 Create `frontend/app/api/resumes/[id]/pdf/route.ts` - PDF download endpoint
+- [ ] T057 Test PDF generation: Download PDF and verify file validity
+
+---
+
+## Phase 12: Advanced Features & Security
+
+**Goal:** Implement quota system, rate limiting, security hardening  
+**Deliverable:** Rate limiting on all routes, input sanitization, security audit complete  
+**Independent Test:** Rate limiting blocks excessive requests, user isolation verified on all endpoints
+
+### Advanced Features Tasks
+
+- [ ] T058 [P] Create `frontend/lib/quota.ts` - Usage quota system (Free vs Paid)
+- [ ] T059 Create `frontend/lib/sanitize.ts` - Input sanitization utilities
+- [ ] T060 Add rate limiting to all major routes (PATCH, DELETE, AI endpoints)
+- [ ] T061 Security audit: Verify user isolation on all endpoints
+- [ ] T062 Create `frontend/lib/logging.ts` - Structured logging for debugging
+- [ ] T063 Test security: Verify User B cannot access User A data on all endpoints
+
+---
+
+## Phase 13: Optimization & Polish
+
+**Goal:** Optimize queries, standardize responses, clean up code  
+**Deliverable:** Optimized queries, consistent error messages, clean code  
+**Independent Test:** API responses < 500ms, error messages consistent
+
+### Optimization Tasks
+
+- [ ] T064 [P] Optimize Prisma queries: Add select/include to reduce data transfer
+- [ ] T065 [P] Create response wrapper: Standardize all API responses
+- [ ] T066 Standardize error messages across all endpoints
+- [ ] T067 Add code comments and documentation
+- [ ] T068 Test performance: Verify API response times < 500ms
+
+---
+
+## Phase 14: Testing & Finalization
+
+**Goal:** Comprehensive testing and final validation  
+**Deliverable:** All endpoints tested, edge cases handled, ready for production  
+**Independent Test:** All endpoints pass manual testing, edge cases handled
+
+### Testing Tasks
+
+- [ ] T069 [P] Test all CRUD endpoints with various data
+- [ ] T070 [P] Test all AI endpoints with edge cases
+- [ ] T071 Test user isolation on all endpoints
+- [ ] T072 Test rate limiting on all protected endpoints
+- [ ] T073 Test error handling: Invalid input, missing fields, unauthorized access
+- [ ] T074 Test PDF generation with different templates
+- [ ] T075 Final security review: Check for vulnerabilities
+- [ ] T076 Final code cleanup and documentation
+
+---
+
+## Dependency Graph
+
+```
+Phase 1 (Setup) → Phase 2 (Auth) → Phase 3 (Utils)
+                                  ↓
+                    Phase 4 (CRUD) [US1]
+                    Phase 6 (AI Core) → Phase 7 (AI Endpoints) [US2]
+                    Phase 8 (ATS) [US3]
+                    Phase 9 (Job Match) [US4]
+                    Phase 10 (Templates) [US5]
+                    Phase 11 (PDF) [US6]
+                                  ↓
+                    Phase 12 (Security)
+                    Phase 13 (Optimization)
+                    Phase 14 (Testing)
 ```
 
-**Files to Create/Modify**:
-- `app/api/resumes/route.ts` (create GET handler)
+---
+
+## Parallel Execution Opportunities
+
+**Can run in parallel after Phase 3:**
+- Phase 4 (CRUD) - Independent user story
+- Phase 6 (AI Core) - Independent user story
+- Phase 8 (ATS) - Independent user story
+- Phase 9 (Job Match) - Independent user story
+- Phase 10 (Templates) - Independent user story
+- Phase 11 (PDF) - Independent user story
+
+**Recommended MVP Scope (Week 1):**
+- Phase 1: Setup & Database
+- Phase 2: Authentication
+- Phase 3: Utils
+- Phase 4: Resume CRUD (User Story 1)
+
+**Recommended Phase 2 Scope (Week 2):**
+- Phase 6: AI Core + Phase 7: AI Endpoints (User Story 2)
+- Phase 8: ATS Score (User Story 3)
 
 ---
 
-### Task 2.2: POST /api/resumes (Create New Resume)
-**Priority**: P0  
-**Estimated**: 1.5 hours  
-**Dependencies**: Task 1.3
+## Implementation Strategy
 
-**Description**:
-Implement endpoint to create new resume with initial data structure.
-
-**Acceptance Criteria**:
-- [ ] Accepts POST request with title and optional templateId
-- [ ] Validates input with Zod schema
-- [ ] Creates resume with empty data structure
-- [ ] Sets default templateId to "modern" if not provided
-- [ ] Returns 201 Created with full resume object
-- [ ] Returns 400 if title is missing or empty
-- [ ] Returns 401 if unauthenticated
-- [ ] Returns 422 if validation fails
-- [ ] Resume data initialized with empty sections
-
-**Request Format**:
-```json
-{
-  "title": "My First Resume",
-  "templateId": "modern"
-}
-```
-
-**Response Format**:
-```json
-{
-  "success": true,
-  "data": {
-    "id": "cuid123",
-    "userId": "user123",
-    "title": "My First Resume",
-    "templateId": "modern",
-    "atsScore": 0,
-    "isPublic": false,
-    "data": {
-      "personalInfo": {},
-      "experience": [],
-      "education": [],
-      "skills": [],
-      "certifications": []
-    },
-    "createdAt": "2026-05-19T10:00:00Z",
-    "updatedAt": "2026-05-19T10:00:00Z"
-  }
-}
-```
-
-**Files to Create/Modify**:
-- `app/api/resumes/route.ts` (add POST handler)
-- `lib/schemas/resume.ts` (create Zod schemas)
+1. **Week 1 (MVP):** Phases 1-4 (Database, Auth, CRUD)
+2. **Week 2:** Phases 6-9 (AI, ATS, Job Match)
+3. **Week 3:** Phases 10-11 (Templates, PDF)
+4. **Week 4:** Phases 12-14 (Security, Optimization, Testing)
 
 ---
 
-### Task 2.3: GET /api/resumes/[id] (Get Single Resume)
-**Priority**: P0  
-**Estimated**: 1 hour  
-**Dependencies**: Task 1.3
+## Success Criteria
 
-**Description**:
-Implement endpoint to fetch complete resume data for authenticated user.
-
-**Acceptance Criteria**:
-- [ ] Returns 200 with full resume object including data
-- [ ] Only returns resume if owned by authenticated user
-- [ ] Returns 404 if resume not found
-- [ ] Returns 403 if resume owned by different user
-- [ ] Returns 401 if unauthenticated
-- [ ] Includes all resume fields: id, userId, title, data, templateId, atsScore, isPublic, timestamps
-
-**Files to Create/Modify**:
-- `app/api/resumes/[resumeId]/route.ts` (create GET handler)
+- ✅ All CRUD operations working with user isolation
+- ✅ AI features returning structured JSON responses
+- ✅ ATS Score + Job Match working
+- ✅ PDF download working with good quality
+- ✅ Rate limiting enforced on all endpoints
+- ✅ Error handling consistent across all endpoints
+- ✅ Security audit passed (user isolation verified)
+- ✅ All endpoints tested and working
 
 ---
 
-### Task 2.4: PATCH /api/resumes/[id] (Update Resume)
-**Priority**: P0  
-**Estimated**: 1.5 hours  
-**Dependencies**: Task 1.3
-
-**Description**:
-Implement endpoint to update resume data with validation and conflict detection.
-
-**Acceptance Criteria**:
-- [ ] Accepts PATCH request with partial resume data
-- [ ] Validates input with Zod schema
-- [ ] Only updates resume if owned by authenticated user
-- [ ] Supports updating: title, templateId, data, isPublic
-- [ ] Returns 200 with updated resume
-- [ ] Returns 400 if data is invalid
-- [ ] Returns 403 if not owner
-- [ ] Returns 404 if resume not found
-- [ ] Returns 401 if unauthenticated
-- [ ] Updates updatedAt timestamp
-
-**Request Format**:
-```json
-{
-  "title": "Updated Title",
-  "data": {
-    "personalInfo": { "fullName": "John Doe" },
-    "experience": [],
-    "education": [],
-    "skills": []
-  }
-}
-```
-
-**Files to Create/Modify**:
-- `app/api/resumes/[resumeId]/route.ts` (add PATCH handler)
-
----
-
-### Task 2.5: DELETE /api/resumes/[id] (Delete Resume)
-**Priority**: P0  
-**Estimated**: 45 minutes  
-**Dependencies**: Task 1.3
-
-**Description**:
-Implement endpoint to delete resume with proper authorization checks.
-
-**Acceptance Criteria**:
-- [ ] Accepts DELETE request
-- [ ] Only deletes resume if owned by authenticated user
-- [ ] Returns 204 No Content on success
-- [ ] Returns 403 if not owner
-- [ ] Returns 404 if resume not found
-- [ ] Returns 401 if unauthenticated
-- [ ] Permanently removes resume from database
-
-**Files to Create/Modify**:
-- `app/api/resumes/[resumeId]/route.ts` (add DELETE handler)
-
----
-
-## Phase 3: Advanced Features (Part 1)
-
-### Task 3.1: POST /api/resumes/[id]/duplicate (Duplicate Resume)
-**Priority**: P1  
-**Estimated**: 1 hour  
-**Dependencies**: Task 2.1, Task 2.2
-
-**Description**:
-Implement endpoint to create a copy of existing resume with new title.
-
-**Acceptance Criteria**:
-- [ ] Accepts POST request with optional newTitle
-- [ ] Creates exact copy of resume data
-- [ ] Sets title to "Copy of {original title}" if newTitle not provided
-- [ ] Returns 201 Created with new resume
-- [ ] Returns 403 if not owner
-- [ ] Returns 404 if source resume not found
-- [ ] Returns 401 if unauthenticated
-
-**Request Format**:
-```json
-{
-  "newTitle": "My Resume - Copy"
-}
-```
-
-**Files to Create/Modify**:
-- `app/api/resumes/[resumeId]/duplicate/route.ts` (create)
-
----
-
-### Task 3.2: GET /api/templates (List Available Templates)
-**Priority**: P1  
-**Estimated**: 1 hour  
-**Dependencies**: None
-
-**Description**:
-Implement public endpoint to list available resume templates.
-
-**Acceptance Criteria**:
-- [ ] Returns 200 with array of templates
-- [ ] No authentication required
-- [ ] Each template includes: id, name, description, preview (optional)
-- [ ] Returns at least 3 templates: modern, classic, minimal
-- [ ] Template data is cached (no database queries)
-- [ ] Response format is consistent
-
-**Response Format**:
-```json
-{
-  "success": true,
-  "data": [
-    {
-      "id": "modern",
-      "name": "Modern",
-      "description": "Clean and contemporary design",
-      "preview": "https://..."
-    }
-  ]
-}
-```
-
-**Files to Create/Modify**:
-- `app/api/templates/route.ts` (create)
-- `lib/templates/index.ts` (create template definitions)
-
----
-
-## Phase 4: Error Handling & Utilities
-
-### Task 4.1: Create Error Handling Utilities
-**Priority**: P1  
-**Estimated**: 1.5 hours  
-**Dependencies**: None
-
-**Description**:
-Implement centralized error handling with custom ApiError class and response helpers.
-
-**Acceptance Criteria**:
-- [ ] ApiError class with code, message, statusCode
-- [ ] Helper functions: unauthorized(), forbidden(), notFound(), badRequest(), conflict(), rateLimitExceeded(), internalError()
-- [ ] All helpers return proper JSON response with error code
-- [ ] Error responses follow spec format: { success: false, error, code }
-- [ ] Error logging captures stack traces
-- [ ] No sensitive data in error messages
-
-**Files to Create/Modify**:
-- `lib/errors/api-error.ts` (create)
-- `lib/errors/handlers.ts` (create)
-
----
-
-### Task 4.2: Create Input Validation Schemas
-**Priority**: P1  
-**Estimated**: 1.5 hours  
-**Dependencies**: None
-
-**Description**:
-Implement Zod schemas for all API inputs with proper validation rules.
-
-**Acceptance Criteria**:
-- [ ] Schema for resume creation (title, templateId)
-- [ ] Schema for resume update (title, templateId, data)
-- [ ] Schema for AI endpoints (text inputs, job descriptions)
-- [ ] All schemas validate string lengths, required fields
-- [ ] Schemas provide helpful error messages
-- [ ] Schemas are reusable across endpoints
-
-**Files to Create/Modify**:
-- `lib/schemas/resume.ts` (create)
-- `lib/schemas/ai.ts` (create)
-
----
-
-## Phase 5: Health Check
-
-### Task 5.1: GET /api/health (Health Check Endpoint)
-**Priority**: P2  
-**Estimated**: 30 minutes  
-**Dependencies**: Task 1.1
-
-**Description**:
-Implement public health check endpoint for monitoring and deployment verification.
-
-**Acceptance Criteria**:
-- [ ] Returns 200 OK
-- [ ] No authentication required
-- [ ] Includes: status, timestamp, database connection status
-- [ ] Database check verifies Prisma connection
-- [ ] Response format: { success: true, status: "healthy", timestamp, database: "connected" }
-
-**Files to Create/Modify**:
-- `app/api/health/route.ts` (create)
-
----
-
-## Implementation Order
-
-1. **Week 1 (Days 1-2)**: Tasks 1.1, 1.2, 1.3, 1.4
-2. **Week 1 (Days 3-5)**: Tasks 2.1, 2.2, 2.3, 2.4, 2.5
-3. **Week 2 (Days 1-2)**: Tasks 3.1, 3.2, 4.1, 4.2
-4. **Week 2 (Day 3)**: Task 5.1
-
----
-
-## Testing Requirements
-
-Each task must include:
-- [ ] Unit tests for validation schemas
-- [ ] Integration tests for API endpoints
-- [ ] Manual testing with Postman/curl
-- [ ] Authorization checks verified
-- [ ] Error cases tested
-
----
-
-**Next Step**: Begin Phase 1 implementation with Task 1.1
+**Status:** Ready for Phase 1 execution  
+**Next:** Begin Phase 1 setup tasks
