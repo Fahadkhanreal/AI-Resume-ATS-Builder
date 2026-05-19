@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Wand2, Check, X } from "lucide-react";
 import { improveWithAI, AIImproveRequest } from "@/lib/ai";
+import { useRateLimit, retryWithBackoff } from "@/lib/hooks/useRateLimit";
 
 interface AIImproveSuggestion {
   original: string;
@@ -27,10 +28,18 @@ export function AIImproveButton({
   const [loading, setLoading] = useState(false);
   const [suggestion, setSuggestion] = useState<AIImproveSuggestion | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const { isAllowed, getRemainingTime } = useRateLimit();
 
   const handleImprove = async () => {
     if (!text.trim()) {
       setError("Please add some text before improving");
+      return;
+    }
+
+    if (!isAllowed()) {
+      const remainingMs = getRemainingTime();
+      const remainingSecs = Math.ceil(remainingMs / 1000);
+      setError(`Rate limited. Try again in ${remainingSecs}s`);
       return;
     }
 
@@ -39,10 +48,11 @@ export function AIImproveButton({
     setSuggestion(null);
 
     try {
-      const result = await improveWithAI({
-        text,
-        context,
-      });
+      const result = await retryWithBackoff(
+        () => improveWithAI({ text, context }),
+        3,
+        500
+      );
       setSuggestion(result);
     } catch (err) {
       setError(
