@@ -1,0 +1,5 @@
+- [Backend Specification Approved](backend-specification-approved.md) — Next.js fullstack architecture with Prisma, Clerk, Gemini AI approved for implementation
+- [Frontend Complete](frontend-complete.md) — Landing page, auth flows, responsive design with animations complete; backend next
+- [Tailwind v4 Setup](tailwind-v4-setup.md) — Fixed CSS compilation by creating tailwind.config.ts with v4 syntax and updating globals.css
+- [Clerk Catch-All Routes](clerk-catch-all-routes.md) — Sign-in/sign-up pages use [[...rest]] structure with redirect logic for authenticated users
+- [SaaS Monetization Model](saas-monetization-model.md) — Freemium tier (free resumes, limited AI), Pro tier ($9.99/mo), Enterprise custom; Stripe/Razorpay for payments
