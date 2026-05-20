@@ -1,7 +1,6 @@
 import { NextRequest } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { Prisma } from "@prisma/client";
 import { updateResumeSchema } from "@/lib/schemas/resume";
 import { ApiErrors } from "@/lib/errors/api-error";
 import { handleApiError, successResponse } from "@/lib/errors/handlers";
@@ -59,10 +58,10 @@ export async function PATCH(
     }
 
     const validatedData = updateResumeSchema.parse(body);
-    const updateData: Prisma.ResumeUpdateInput = {
+    const updateData = {
       ...validatedData,
-      data: validatedData.data as Prisma.InputJsonValue | undefined,
-    };
+      data: validatedData.data ?? undefined,
+    } as Parameters<typeof prisma.resume.update>[0]["data"];
 
     const updated = await prisma.resume.update({
       where: { id: resumeId },
