@@ -4,6 +4,16 @@ import { handleApiError, successResponse } from "@/lib/errors/handlers";
 
 export const dynamic = "force-dynamic";
 
+type ResumeListItem = {
+  id: string;
+  title: string;
+  templateId: string;
+  atsScore: number | null;
+  isPublic: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 export async function GET() {
   try {
     const user = await getCurrentUser();
@@ -21,7 +31,7 @@ export async function GET() {
       orderBy: { createdAt: "desc" },
     });
 
-    const formattedResumes = resumes.map((resume, index) => ({
+    const formattedResumes = (resumes as ResumeListItem[]).map((resume, index) => ({
       ...resume,
       displayTitle: `Resume ${index + 1}`,
       title:
