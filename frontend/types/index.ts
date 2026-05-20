@@ -5,6 +5,13 @@ export interface Resume {
   title: string;
   template: string;
   sections: Section[];
+  personalInfo?: PersonalInfo;
+  summary?: string;
+  experience?: ExperienceEntry[];
+  education?: EducationEntry[];
+  skills?: string[];
+  projects?: ProjectEntry[];
+  certifications?: CertificationEntry[];
   createdAt: Date;
   updatedAt: Date;
   atsScore?: number;
@@ -31,7 +38,7 @@ export type SectionType =
 
 export interface Entry {
   id: string;
-  sectionId: string;
+  sectionId?: string;
   [key: string]: any;
 }
 
@@ -45,28 +52,43 @@ export interface PersonalInfo extends Entry {
   website?: string;
   linkedin?: string;
   github?: string;
+  photoUrl?: string;
 }
 
 export interface ExperienceEntry extends Entry {
   company: string;
-  role: string;
+  jobTitle: string;
   startDate: string;
   endDate: string;
   description: string;
-  bulletPoints: string[];
+  bullets: string[];
 }
 
 export interface EducationEntry extends Entry {
   school: string;
   degree: string;
   field: string;
-  graduationDate: string;
+  graduationYear: string;
   description?: string;
 }
 
 export interface SkillEntry extends Entry {
   name: string;
   proficiency?: "beginner" | "intermediate" | "advanced" | "expert";
+}
+
+export interface ProjectEntry extends Entry {
+  name: string;
+  description: string;
+  link?: string;
+  technologies?: string[];
+}
+
+export interface CertificationEntry extends Entry {
+  name: string;
+  issuer: string;
+  issueDate?: string;
+  expiryDate?: string;
 }
 
 // AI Types

@@ -17,11 +17,16 @@ interface ProjectEntry {
 }
 
 export default function ProjectsEditor() {
-  const { currentResume } = useResumeStore();
+  const { currentResume, updateProjects } = useResumeStore();
   const [entries, setEntries] = useState<ProjectEntry[]>(
     currentResume?.projects || []
   );
   const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  const setProjectEntries = (nextEntries: ProjectEntry[]) => {
+    setEntries(nextEntries);
+    updateProjects(nextEntries as any);
+  };
 
   const addEntry = () => {
     const newEntry: ProjectEntry = {
@@ -31,12 +36,12 @@ export default function ProjectsEditor() {
       link: "",
       technologies: [],
     };
-    setEntries([...entries, newEntry]);
+    setProjectEntries([...entries, newEntry]);
     setExpandedId(newEntry.id);
   };
 
   const updateEntry = (id: string, updates: Partial<ProjectEntry>) => {
-    setEntries(
+    setProjectEntries(
       entries.map((entry) =>
         entry.id === id ? { ...entry, ...updates } : entry
       )
@@ -44,7 +49,7 @@ export default function ProjectsEditor() {
   };
 
   const deleteEntry = (id: string) => {
-    setEntries(entries.filter((entry) => entry.id !== id));
+    setProjectEntries(entries.filter((entry) => entry.id !== id));
   };
 
   return (
@@ -63,11 +68,19 @@ export default function ProjectsEditor() {
             key={entry.id}
             className="border border-slate-700 rounded-lg overflow-hidden"
           >
-            <button
+            <div
+              role="button"
+              tabIndex={0}
               onClick={() =>
                 setExpandedId(expandedId === entry.id ? null : entry.id)
               }
-              className="w-full px-4 py-3 bg-slate-800 hover:bg-slate-700 flex justify-between items-center transition"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setExpandedId(expandedId === entry.id ? null : entry.id);
+                }
+              }}
+              className="w-full px-4 py-3 bg-slate-800 hover:bg-slate-700 flex justify-between items-center transition cursor-pointer"
             >
               <div className="text-left">
                 <p className="font-medium text-white">
@@ -85,7 +98,7 @@ export default function ProjectsEditor() {
               >
                 <Trash2 size={14} className="text-slate-400 hover:text-red-400" />
               </Button>
-            </button>
+            </div>
 
             {expandedId === entry.id && (
               <div className="bg-slate-900 border-t border-slate-700 p-4 space-y-3">
@@ -153,9 +166,9 @@ export default function ProjectsEditor() {
         </div>
       )}
 
-      <Button type="submit" className="w-full">
-        Save Projects
-      </Button>
+      <p className="rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-xs text-slate-400">
+        Changes update the preview automatically. Use the top Save button to save the full resume.
+      </p>
     </div>
   );
 }

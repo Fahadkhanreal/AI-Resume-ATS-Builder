@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useResumeStore } from "@/lib/store/resume.store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,12 +15,31 @@ interface EducationEntry {
   graduationYear: string;
 }
 
+function normalizeEducationEntries(entries: unknown): EducationEntry[] {
+  if (!Array.isArray(entries)) return [];
+
+  return entries.map((entry: any, index) => ({
+    id: entry?.id || `edu_${index}_${Date.now()}`,
+    school: entry?.school || "",
+    degree: entry?.degree || "",
+    field: entry?.field || "",
+    graduationYear: entry?.graduationYear || entry?.graduationDate || "",
+  }));
+}
+
 export default function EducationEditor() {
-  const { currentResume } = useResumeStore();
-  const [entries, setEntries] = useState<EducationEntry[]>(
-    currentResume?.education || []
+  const { currentResume, updateEducation } = useResumeStore();
+  const initialEntries = useMemo(
+    () => normalizeEducationEntries(currentResume?.education),
+    [currentResume?.id]
   );
+  const [entries, setEntries] = useState<EducationEntry[]>(initialEntries);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  const setEducationEntries = (nextEntries: EducationEntry[]) => {
+    setEntries(nextEntries);
+    updateEducation(nextEntries as any);
+  };
 
   const addEntry = () => {
     const newEntry: EducationEntry = {
@@ -30,12 +49,12 @@ export default function EducationEditor() {
       field: "",
       graduationYear: "",
     };
-    setEntries([...entries, newEntry]);
+    setEducationEntries([...entries, newEntry]);
     setExpandedId(newEntry.id);
   };
 
   const updateEntry = (id: string, updates: Partial<EducationEntry>) => {
-    setEntries(
+    setEducationEntries(
       entries.map((entry) =>
         entry.id === id ? { ...entry, ...updates } : entry
       )
@@ -43,7 +62,7 @@ export default function EducationEditor() {
   };
 
   const deleteEntry = (id: string) => {
-    setEntries(entries.filter((entry) => entry.id !== id));
+    setEducationEntries(entries.filter((entry) => entry.id !== id));
   };
 
   return (
@@ -62,11 +81,19 @@ export default function EducationEditor() {
             key={entry.id}
             className="border border-slate-700 rounded-lg overflow-hidden"
           >
-            <button
+            <div
+              role="button"
+              tabIndex={0}
               onClick={() =>
                 setExpandedId(expandedId === entry.id ? null : entry.id)
               }
-              className="w-full px-4 py-3 bg-slate-800 hover:bg-slate-700 flex justify-between items-center transition"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setExpandedId(expandedId === entry.id ? null : entry.id);
+                }
+              }}
+              className="w-full px-4 py-3 bg-slate-800 hover:bg-slate-700 flex justify-between items-center transition cursor-pointer"
             >
               <div className="text-left">
                 <p className="font-medium text-white">
@@ -87,7 +114,7 @@ export default function EducationEditor() {
               >
                 <Trash2 size={14} className="text-slate-400 hover:text-red-400" />
               </Button>
-            </button>
+            </div>
 
             {expandedId === entry.id && (
               <div className="bg-slate-900 border-t border-slate-700 p-4 space-y-3">
@@ -103,7 +130,7 @@ export default function EducationEditor() {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div>
                     <Label className="text-xs text-slate-300">Degree</Label>
                     <Input
@@ -152,9 +179,9 @@ export default function EducationEditor() {
         </div>
       )}
 
-      <Button type="submit" className="w-full">
-        Save Education
-      </Button>
+      <p className="rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-xs text-slate-400">
+        Changes update the preview automatically. Use the top Save button to save the full resume.
+      </p>
     </div>
   );
 }

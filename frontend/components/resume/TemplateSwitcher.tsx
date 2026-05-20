@@ -25,7 +25,7 @@ export function TemplateSwitcher() {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-slate-800 rounded-lg p-6 max-w-2xl w-full mx-4 border border-slate-700">
+      <div className="mx-3 max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg border border-slate-700 bg-slate-800 p-4 sm:mx-4 sm:p-6">
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-lg font-semibold text-white">Choose Template</h3>
           <button
@@ -36,7 +36,7 @@ export function TemplateSwitcher() {
           </button>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 sm:gap-4">
           {AVAILABLE_TEMPLATES.map((template) => (
             <button
               key={template.id}

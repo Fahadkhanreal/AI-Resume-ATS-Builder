@@ -1,10 +1,10 @@
 "use client";
 
+import { ChangeEvent, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useResumeStore } from "@/lib/store/resume.store";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -17,17 +17,20 @@ const personalInfoSchema = z.object({
   website: z.string().url("Invalid URL").optional().or(z.literal("")),
   linkedin: z.string().optional(),
   github: z.string().optional(),
+  photoUrl: z.string().optional(),
 });
 
 type PersonalInfoFormData = z.infer<typeof personalInfoSchema>;
 
 export default function PersonalInfoForm() {
-  const { currentResume, updatePersonalInfo } = useResumeStore();
+  const { currentResume, updatePersonalInfo, saveResume } = useResumeStore();
+  const didMount = useRef(false);
   const {
     register,
     handleSubmit,
+    watch,
+    setValue,
     formState: { errors },
-    reset,
   } = useForm<PersonalInfoFormData>({
     resolver: zodResolver(personalInfoSchema),
     defaultValues: {
@@ -39,15 +42,65 @@ export default function PersonalInfoForm() {
       website: currentResume?.personalInfo?.website || "",
       linkedin: currentResume?.personalInfo?.linkedin || "",
       github: currentResume?.personalInfo?.github || "",
+      photoUrl: currentResume?.personalInfo?.photoUrl || "",
     },
   });
+
+  useEffect(() => {
+    const subscription = watch((value) => {
+      if (!didMount.current) {
+        didMount.current = true;
+        return;
+      }
+
+      updatePersonalInfo(value as Partial<PersonalInfoFormData>);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [watch, updatePersonalInfo]);
 
   const onSubmit = (data: PersonalInfoFormData) => {
     updatePersonalInfo(data);
   };
 
+  const handlePhotoUpload = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const photoUrl = reader.result?.toString() || "";
+      setValue("photoUrl", photoUrl);
+      updatePersonalInfo({ photoUrl } as Partial<PersonalInfoFormData>);
+      if (currentResume?.id) {
+        setTimeout(() => {
+          saveResume(currentResume.id).catch((error) => {
+            console.error("Error saving profile photo:", error);
+          });
+        }, 100);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <div>
+        <Label htmlFor="photo" className="text-slate-300">
+          Profile Photo (Optional)
+        </Label>
+        <Input
+          id="photo"
+          type="file"
+          accept="image/*"
+          onChange={handlePhotoUpload}
+          className="mt-1 bg-slate-700 border-slate-600 text-white file:mr-3 file:rounded-md file:border-0 file:bg-emerald-600 file:px-3 file:py-1 file:text-white"
+        />
+        {currentResume?.personalInfo?.photoUrl && (
+          <p className="mt-1 text-xs text-emerald-400">Photo added to preview.</p>
+        )}
+      </div>
+
       <div>
         <Label htmlFor="fullName" className="text-slate-300">
           Full Name *
@@ -75,7 +128,7 @@ export default function PersonalInfoForm() {
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
           <Label htmlFor="email" className="text-slate-300">
             Email
@@ -133,7 +186,7 @@ export default function PersonalInfoForm() {
         )}
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
           <Label htmlFor="linkedin" className="text-slate-300">
             LinkedIn
@@ -159,9 +212,9 @@ export default function PersonalInfoForm() {
         </div>
       </div>
 
-      <Button type="submit" className="w-full mt-6">
-        Save Personal Information
-      </Button>
+      <p className="rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-xs text-slate-400">
+        Changes update the preview automatically. Use the top Save button to save the full resume.
+      </p>
     </form>
   );
 }

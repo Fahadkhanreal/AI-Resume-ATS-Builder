@@ -1,50 +1,44 @@
-import { auth } from "@clerk/nextjs/server";
-import { NextRequest, NextResponse } from "next/server";
+import { getCurrentUser } from "@/lib/auth";
+import { prisma } from "@/lib/db";
+import { ApiErrors } from "@/lib/errors/api-error";
+import { handleApiError, successResponse } from "@/lib/errors/handlers";
+import { ResumeData } from "@/types/resume";
+
+export const dynamic = "force-dynamic";
 
 export async function GET(
-  request: NextRequest,
-  { params }: { params: { resumeId: string } }
+  _request: Request,
+  { params }: { params: Promise<{ resumeId: string }> }
 ) {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const user = await getCurrentUser();
+    const { resumeId } = await params;
+    const resume = await prisma.resume.findUnique({ where: { id: resumeId } });
 
-    const { resumeId } = params;
+    if (!resume) throw ApiErrors.notFound("Resume");
+    if (resume.userId !== user.id) throw ApiErrors.forbidden();
 
-    // TODO: Fetch resume from database
-    const resume = {
-      id: resumeId,
-      userId,
-      title: "My Resume",
-      template: "modern",
-      personalInfo: {
-        fullName: "",
-        title: "",
-        email: "",
-        phone: "",
-        location: "",
-        website: "",
-        linkedin: "",
-        github: "",
-      },
-      summary: "",
-      experience: [],
-      education: [],
-      skills: [],
-      projects: [],
-      certifications: [],
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+    const data = resume.data as ResumeData;
 
-    return NextResponse.json(resume);
+    return successResponse({
+      id: resume.id,
+      userId: resume.userId,
+      title: resume.title,
+      template: resume.templateId,
+      templateId: resume.templateId,
+      personalInfo: data.personalInfo ?? {},
+      summary: data.personalInfo?.summary ?? "",
+      experience: data.experience ?? [],
+      education: data.education ?? [],
+      skills: data.skills ?? [],
+      projects: data.projects ?? [],
+      certifications: data.certifications ?? [],
+      data,
+      createdAt: resume.createdAt,
+      updatedAt: resume.updatedAt,
+      atsScore: resume.atsScore ?? 0,
+    });
   } catch (error) {
-    console.error("Error fetching resume:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch resume" },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
+import { Document, Image, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 import { Resume } from "@/types";
 
 const styles = StyleSheet.create({
@@ -14,6 +14,17 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2,
     borderBottomColor: "#000",
     paddingBottom: 10,
+  },
+  headerRow: {
+    flexDirection: "row",
+    gap: 14,
+    alignItems: "center",
+  },
+  photo: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    objectFit: "cover",
   },
   name: {
     fontSize: 24,
@@ -80,33 +91,59 @@ interface PDFResumeProps {
 }
 
 export function PDFResume({ resume }: PDFResumeProps) {
+  const template = ((resume as any).templateId || resume.template || "modern") as string;
+  const accentColor =
+    template === "creative" ? "#7e22ce" : template === "modern" ? "#059669" : "#111827";
+
   return (
     <Document>
       <Page size="A4" style={styles.page}>
         {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.name}>
-            {resume.personalInfo?.fullName || "Your Name"}
-          </Text>
-          <Text style={styles.title}>
-            {resume.personalInfo?.title || "Professional Title"}
-          </Text>
-          <View>
-            {resume.personalInfo?.email && (
-              <Text style={styles.contactInfo}>
-                Email: {resume.personalInfo.email}
-              </Text>
+        <View style={[styles.header, { borderBottomColor: accentColor }]}>
+          <View style={styles.headerRow}>
+            {resume.personalInfo?.photoUrl && (
+              <Image src={resume.personalInfo.photoUrl} style={styles.photo} />
             )}
-            {resume.personalInfo?.phone && (
-              <Text style={styles.contactInfo}>
-                Phone: {resume.personalInfo.phone}
+            <View>
+              <Text style={[styles.name, { color: accentColor }]}>
+                {resume.personalInfo?.fullName || "Your Name"}
               </Text>
-            )}
-            {resume.personalInfo?.location && (
-              <Text style={styles.contactInfo}>
-                Location: {resume.personalInfo.location}
+              <Text style={styles.title}>
+                {resume.personalInfo?.title || "Professional Title"}
               </Text>
-            )}
+              <View>
+                {resume.personalInfo?.email && (
+                  <Text style={styles.contactInfo}>
+                    Email: {resume.personalInfo.email}
+                  </Text>
+                )}
+                {resume.personalInfo?.phone && (
+                  <Text style={styles.contactInfo}>
+                    Phone: {resume.personalInfo.phone}
+                  </Text>
+                )}
+                {resume.personalInfo?.location && (
+                  <Text style={styles.contactInfo}>
+                    Location: {resume.personalInfo.location}
+                  </Text>
+                )}
+                {resume.personalInfo?.website && (
+                  <Text style={styles.contactInfo}>
+                    Website: {resume.personalInfo.website}
+                  </Text>
+                )}
+                {resume.personalInfo?.linkedin && (
+                  <Text style={styles.contactInfo}>
+                    LinkedIn: {resume.personalInfo.linkedin}
+                  </Text>
+                )}
+                {resume.personalInfo?.github && (
+                  <Text style={styles.contactInfo}>
+                    GitHub: {resume.personalInfo.github}
+                  </Text>
+                )}
+              </View>
+            </View>
           </View>
         </View>
 

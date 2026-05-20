@@ -1,22 +1,37 @@
-import { auth } from "@clerk/nextjs/server";
-import { NextRequest, NextResponse } from "next/server";
+import { getCurrentUser } from "@/lib/auth";
+import { prisma } from "@/lib/db";
+import { handleApiError, successResponse } from "@/lib/errors/handlers";
 
-export async function GET(request: NextRequest) {
+export const dynamic = "force-dynamic";
+
+export async function GET() {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const user = await getCurrentUser();
+    const resumes = await prisma.resume.findMany({
+      where: { userId: user.id },
+      select: {
+        id: true,
+        title: true,
+        templateId: true,
+        atsScore: true,
+        isPublic: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+      orderBy: { createdAt: "desc" },
+    });
 
-    // TODO: Fetch resumes from database for this user
-    const resumes = [];
+    const formattedResumes = resumes.map((resume, index) => ({
+      ...resume,
+      displayTitle: `Resume ${index + 1}`,
+      title:
+        resume.title && !/^New Resume$|^Resume \d+$/i.test(resume.title)
+          ? resume.title
+          : `Resume ${index + 1}`,
+    }));
 
-    return NextResponse.json(resumes);
+    return successResponse(formattedResumes);
   } catch (error) {
-    console.error("Error fetching resumes:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch resumes" },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }

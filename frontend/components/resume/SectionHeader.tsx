@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { ChevronDown, ChevronRight, Trash2, Copy } from "lucide-react";
+import { ChevronDown, ChevronRight, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface SectionHeaderProps {
@@ -9,7 +8,6 @@ interface SectionHeaderProps {
   isExpanded: boolean;
   onToggle: () => void;
   onDelete?: () => void;
-  onDuplicate?: () => void;
 }
 
 export function SectionHeader({
@@ -17,36 +15,22 @@ export function SectionHeader({
   isExpanded,
   onToggle,
   onDelete,
-  onDuplicate,
 }: SectionHeaderProps) {
   return (
-    <div className="flex items-center justify-between px-4 py-3 bg-slate-800 hover:bg-slate-700 rounded-lg transition cursor-pointer">
+    <div className="flex items-center justify-between rounded-lg bg-slate-800 px-3 py-3 transition hover:bg-slate-700 sm:px-4 cursor-pointer">
       <button
         onClick={onToggle}
-        className="flex items-center gap-2 flex-1 text-left"
+        className="flex min-w-0 flex-1 items-center gap-2 text-left"
       >
         {isExpanded ? (
           <ChevronDown size={18} className="text-slate-400" />
         ) : (
           <ChevronRight size={18} className="text-slate-400" />
         )}
-        <span className="font-medium text-white">{title}</span>
+        <span className="truncate text-sm font-medium text-white sm:text-base">{title}</span>
       </button>
 
       <div className="flex gap-1">
-        {onDuplicate && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              onDuplicate();
-            }}
-            className="h-6 w-6 p-0"
-          >
-            <Copy size={14} className="text-slate-400 hover:text-emerald-400" />
-          </Button>
-        )}
         {onDelete && (
           <Button
             variant="ghost"

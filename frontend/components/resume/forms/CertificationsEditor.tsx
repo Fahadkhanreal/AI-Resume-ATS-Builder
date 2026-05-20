@@ -2,25 +2,23 @@
 
 import { useState } from "react";
 import { useResumeStore } from "@/lib/store/resume.store";
+import { CertificationEntry } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Plus, Trash2 } from "lucide-react";
 
-interface CertificationEntry {
-  id: string;
-  name: string;
-  issuer: string;
-  issueDate: string;
-  expiryDate?: string;
-}
-
 export default function CertificationsEditor() {
-  const { currentResume } = useResumeStore();
+  const { currentResume, updateCertifications } = useResumeStore();
   const [entries, setEntries] = useState<CertificationEntry[]>(
-    currentResume?.certifications || []
+    (currentResume?.certifications as CertificationEntry[]) || []
   );
   const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  const setCertificationEntries = (nextEntries: CertificationEntry[]) => {
+    setEntries(nextEntries);
+    updateCertifications(nextEntries as any);
+  };
 
   const addEntry = () => {
     const newEntry: CertificationEntry = {
@@ -30,12 +28,12 @@ export default function CertificationsEditor() {
       issueDate: "",
       expiryDate: "",
     };
-    setEntries([...entries, newEntry]);
+    setCertificationEntries([...entries, newEntry]);
     setExpandedId(newEntry.id);
   };
 
   const updateEntry = (id: string, updates: Partial<CertificationEntry>) => {
-    setEntries(
+    setCertificationEntries(
       entries.map((entry) =>
         entry.id === id ? { ...entry, ...updates } : entry
       )
@@ -43,7 +41,7 @@ export default function CertificationsEditor() {
   };
 
   const deleteEntry = (id: string) => {
-    setEntries(entries.filter((entry) => entry.id !== id));
+    setCertificationEntries(entries.filter((entry) => entry.id !== id));
   };
 
   return (
@@ -62,11 +60,19 @@ export default function CertificationsEditor() {
             key={entry.id}
             className="border border-slate-700 rounded-lg overflow-hidden"
           >
-            <button
+            <div
+              role="button"
+              tabIndex={0}
               onClick={() =>
                 setExpandedId(expandedId === entry.id ? null : entry.id)
               }
-              className="w-full px-4 py-3 bg-slate-800 hover:bg-slate-700 flex justify-between items-center transition"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setExpandedId(expandedId === entry.id ? null : entry.id);
+                }
+              }}
+              className="w-full px-4 py-3 bg-slate-800 hover:bg-slate-700 flex justify-between items-center transition cursor-pointer"
             >
               <div className="text-left">
                 <p className="font-medium text-white">
@@ -87,7 +93,7 @@ export default function CertificationsEditor() {
               >
                 <Trash2 size={14} className="text-slate-400 hover:text-red-400" />
               </Button>
-            </button>
+            </div>
 
             {expandedId === entry.id && (
               <div className="bg-slate-900 border-t border-slate-700 p-4 space-y-3">
@@ -115,7 +121,7 @@ export default function CertificationsEditor() {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div>
                     <Label className="text-xs text-slate-300">Issue Date</Label>
                     <Input
@@ -151,9 +157,9 @@ export default function CertificationsEditor() {
         </div>
       )}
 
-      <Button type="submit" className="w-full">
-        Save Certifications
-      </Button>
+      <p className="rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-xs text-slate-400">
+        Changes update the preview automatically. Use the top Save button to save the full resume.
+      </p>
     </div>
   );
 }

@@ -38,7 +38,7 @@ export function PDFExportButton() {
     <Button
       onClick={handleExport}
       disabled={loading || !currentResume}
-      className="gap-2"
+      className="w-full gap-2 xl:w-auto"
     >
       {loading ? (
         <>

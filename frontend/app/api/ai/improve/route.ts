@@ -1,6 +1,19 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
-import { improveWithAI } from "@/lib/ai";
+import { generateJsonResponse } from "@/lib/ai/gemini";
+
+const prompts: Record<string, string> = {
+  summary:
+    "Improve this professional summary to be more compelling and ATS-friendly. Keep it concise in 2-3 sentences.",
+  experience:
+    "Improve these experience bullet points with action verbs, measurable impact, and ATS-friendly wording.",
+  skills:
+    "Improve this skills section by organizing and optimizing the wording for ATS relevance.",
+  education:
+    "Enhance this education entry with relevant professional wording.",
+};
+
+export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,21 +24,30 @@ export async function POST(request: NextRequest) {
 
     const { text, context } = await request.json();
 
-    if (!text || !context) {
+    if (!text || !context || !prompts[context]) {
       return NextResponse.json(
-        { error: "Missing text or context" },
+        { error: "Missing or invalid text/context" },
         { status: 400 }
       );
     }
 
-    const result = await improveWithAI({ text, context });
+    const result = await generateJsonResponse<{
+      improved: string;
+      suggestions?: string[];
+    }>(`${prompts[context]}
 
-    return NextResponse.json(result);
+Return only valid JSON in this shape:
+{"improved":"...","suggestions":["..."]}
+
+Text: ${JSON.stringify(text)}`);
+
+    return NextResponse.json({
+      original: text,
+      improved: result.improved || text,
+      suggestions: result.suggestions || [],
+    });
   } catch (error) {
-    console.error("Error improving text:", error);
-    return NextResponse.json(
-      { error: "Failed to improve text" },
-      { status: 500 }
-    );
+    const message = error instanceof Error ? error.message : "Failed to improve text";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

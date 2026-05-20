@@ -26,7 +26,9 @@ export function DragDropEditor({ children }: DragDropEditorProps) {
   const { currentResume, reorderSections } = useResumeStore();
   const sensors = useSensors(
     useSensor(PointerSensor, {
-      distance: 8,
+      activationConstraint: {
+        distance: 8,
+      },
     }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
@@ -37,16 +39,13 @@ export function DragDropEditor({ children }: DragDropEditorProps) {
     const { active, over } = event;
 
     if (over && active.id !== over.id && currentResume) {
-      const oldIndex = currentResume.sections.findIndex(
-        (s) => s.id === active.id
-      );
-      const newIndex = currentResume.sections.findIndex(
-        (s) => s.id === over.id
-      );
+      const sections = currentResume.sections ?? [];
+      const oldIndex = sections.findIndex((s) => s.id === active.id);
+      const newIndex = sections.findIndex((s) => s.id === over.id);
 
       if (oldIndex !== -1 && newIndex !== -1) {
         const newSections = arrayMove(
-          currentResume.sections,
+          sections,
           oldIndex,
           newIndex
         );
@@ -57,7 +56,7 @@ export function DragDropEditor({ children }: DragDropEditorProps) {
 
   if (!currentResume) return children;
 
-  const sectionIds = currentResume.sections.map((s) => s.id);
+  const sectionIds = (currentResume.sections ?? []).map((s) => s.id);
 
   return (
     <DndContext

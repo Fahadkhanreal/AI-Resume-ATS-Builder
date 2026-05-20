@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useResumeStore } from "@/lib/store/resume.store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,12 +19,33 @@ interface ExperienceEntry {
   bullets: string[];
 }
 
+function normalizeExperienceEntries(entries: unknown): ExperienceEntry[] {
+  if (!Array.isArray(entries)) return [];
+
+  return entries.map((entry: any, index) => ({
+    id: entry?.id || `exp_${index}_${Date.now()}`,
+    jobTitle: entry?.jobTitle || entry?.position || "",
+    company: entry?.company || "",
+    startDate: entry?.startDate || "",
+    endDate: entry?.endDate || "",
+    description: entry?.description || "",
+    bullets: Array.isArray(entry?.bullets) ? entry.bullets.filter(Boolean) : [],
+  }));
+}
+
 export default function ExperienceEditor() {
-  const { currentResume } = useResumeStore();
-  const [entries, setEntries] = useState<ExperienceEntry[]>(
-    currentResume?.experience || []
+  const { currentResume, updateExperience } = useResumeStore();
+  const initialEntries = useMemo(
+    () => normalizeExperienceEntries(currentResume?.experience),
+    [currentResume?.id]
   );
+  const [entries, setEntries] = useState<ExperienceEntry[]>(initialEntries);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  const setExperienceEntries = (nextEntries: ExperienceEntry[]) => {
+    setEntries(nextEntries);
+    updateExperience(nextEntries as any);
+  };
 
   const addEntry = () => {
     const newEntry: ExperienceEntry = {
@@ -36,12 +57,12 @@ export default function ExperienceEditor() {
       description: "",
       bullets: [],
     };
-    setEntries([...entries, newEntry]);
+    setExperienceEntries([...entries, newEntry]);
     setExpandedId(newEntry.id);
   };
 
   const updateEntry = (id: string, updates: Partial<ExperienceEntry>) => {
-    setEntries(
+    setExperienceEntries(
       entries.map((entry) =>
         entry.id === id ? { ...entry, ...updates } : entry
       )
@@ -49,7 +70,7 @@ export default function ExperienceEditor() {
   };
 
   const deleteEntry = (id: string) => {
-    setEntries(entries.filter((entry) => entry.id !== id));
+    setExperienceEntries(entries.filter((entry) => entry.id !== id));
   };
 
   const addBullet = (id: string) => {
@@ -90,11 +111,19 @@ export default function ExperienceEditor() {
             key={entry.id}
             className="border border-slate-700 rounded-lg overflow-hidden"
           >
-            <button
+            <div
+              role="button"
+              tabIndex={0}
               onClick={() =>
                 setExpandedId(expandedId === entry.id ? null : entry.id)
               }
-              className="w-full px-4 py-3 bg-slate-800 hover:bg-slate-700 flex justify-between items-center transition"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setExpandedId(expandedId === entry.id ? null : entry.id);
+                }
+              }}
+              className="w-full px-4 py-3 bg-slate-800 hover:bg-slate-700 flex justify-between items-center transition cursor-pointer"
             >
               <div className="text-left">
                 <p className="font-medium text-white">
@@ -115,11 +144,11 @@ export default function ExperienceEditor() {
               >
                 <Trash2 size={14} className="text-slate-400 hover:text-red-400" />
               </Button>
-            </button>
+            </div>
 
             {expandedId === entry.id && (
               <div className="bg-slate-900 border-t border-slate-700 p-4 space-y-3">
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div>
                     <Label className="text-xs text-slate-300">Job Title</Label>
                     <Input
@@ -144,7 +173,7 @@ export default function ExperienceEditor() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div>
                     <Label className="text-xs text-slate-300">Start Date</Label>
                     <Input
@@ -221,20 +250,17 @@ export default function ExperienceEditor() {
                   </div>
                 </div>
 
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full gap-2"
-                >
-                  <AIImproveButton
-                    text={entry.bullets.join(", ")}
-                    context="experience"
-                    onAccept={(improved) => {
-                      const bullets = improved.split(",").map((b) => b.trim());
-                      updateEntry(entry.id, { bullets });
-                    }}
-                  />
-                </Button>
+                <AIImproveButton
+                  text={entry.bullets.join(", ") || entry.description}
+                  context="experience"
+                  onAccept={(improved) => {
+                    const bullets = improved
+                      .split(/\n|•|-/)
+                      .map((b) => b.trim())
+                      .filter(Boolean);
+                    updateEntry(entry.id, { bullets: bullets.length ? bullets : [improved] });
+                  }}
+                />
               </div>
             )}
           </div>
@@ -247,9 +273,9 @@ export default function ExperienceEditor() {
         </div>
       )}
 
-      <Button type="submit" className="w-full">
-        Save Experience
-      </Button>
+      <p className="rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-xs text-slate-400">
+        Changes update the preview automatically. Use the top Save button to save the full resume.
+      </p>
     </div>
   );
 }

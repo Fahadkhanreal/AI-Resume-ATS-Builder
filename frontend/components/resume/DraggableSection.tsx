@@ -3,8 +3,8 @@
 import { ReactNode } from "react";
 import {
   useSortable,
-  CSS,
 } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 

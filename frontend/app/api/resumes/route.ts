@@ -1,32 +1,54 @@
-import { auth } from "@clerk/nextjs/server";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
+import { getCurrentUser } from "@/lib/auth";
+import { prisma } from "@/lib/db";
+import { createResumeSchema } from "@/lib/schemas/resume";
+import { handleApiError, successResponse } from "@/lib/errors/handlers";
+import { getDefaultResumeData } from "@/lib/resume-utils";
+
+export const dynamic = "force-dynamic";
+
+export async function GET(req: NextRequest) {
+  try {
+    const user = await getCurrentUser();
+
+    const resumes = await prisma.resume.findMany({
+      where: { userId: user.id },
+      select: {
+        id: true,
+        title: true,
+        templateId: true,
+        atsScore: true,
+        isPublic: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    return successResponse(resumes);
+  } catch (error) {
+    return handleApiError(error);
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const user = await getCurrentUser();
+    const body = await request.json();
 
-    const { title } = await request.json();
+    const validatedData = createResumeSchema.parse(body);
 
-    // TODO: Create resume in database
-    const newResume = {
-      id: `resume_${Date.now()}`,
-      userId,
-      title: title || "New Resume",
-      template: "modern",
-      sections: [],
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+    const resume = await prisma.resume.create({
+      data: {
+        userId: user.id,
+        title: validatedData.title,
+        templateId: validatedData.templateId,
+        data: getDefaultResumeData() as object,
+      },
+    });
 
-    return NextResponse.json(newResume, { status: 201 });
+    return successResponse(resume, 201);
   } catch (error) {
-    console.error("Error creating resume:", error);
-    return NextResponse.json(
-      { error: "Failed to create resume" },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }

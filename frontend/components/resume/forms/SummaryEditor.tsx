@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useResumeStore } from "@/lib/store/resume.store";
-import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { AIImproveButton } from "@/components/resume/AIImproveButton";
@@ -10,21 +9,21 @@ import { AIImproveButton } from "@/components/resume/AIImproveButton";
 const MAX_SUMMARY_LENGTH = 500;
 
 export default function SummaryEditor() {
-  const { currentResume } = useResumeStore();
-  const [summary, setSummary] = useState(currentResume?.summary || "");
-  const [charCount, setCharCount] = useState(summary.length);
+  const { currentResume, updateSummary } = useResumeStore();
+  const summary = currentResume?.summary || currentResume?.personalInfo?.summary || "";
+  const charCount = summary.length;
 
-  useEffect(() => {
-    setCharCount(summary.length);
-  }, [summary]);
+  const updateSummaryValue = (value: string) => {
+    const nextSummary = value.slice(0, MAX_SUMMARY_LENGTH);
+    updateSummary(nextSummary);
+  };
 
   const handleSummaryChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const value = e.target.value.slice(0, MAX_SUMMARY_LENGTH);
-    setSummary(value);
+    updateSummaryValue(e.target.value);
   };
 
   const handleAIAccept = (improvedText: string) => {
-    setSummary(improvedText);
+    updateSummaryValue(improvedText);
   };
 
   return (
@@ -58,9 +57,9 @@ export default function SummaryEditor() {
         onAccept={handleAIAccept}
       />
 
-      <Button type="submit" className="w-full">
-        Save Summary
-      </Button>
+      <p className="rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-xs text-slate-400">
+        Changes update the preview automatically. Use the top Save button to save the full resume.
+      </p>
     </div>
   );
 }

@@ -8,20 +8,35 @@ import { Label } from "@/components/ui/label";
 import { Plus, X } from "lucide-react";
 import { AIImproveButton } from "@/components/resume/AIImproveButton";
 
+function normalizeSkills(skills: unknown): string[] {
+  if (!Array.isArray(skills)) return [];
+
+  return skills
+    .map((skill: any) =>
+      typeof skill === "string" ? skill : skill?.name || skill?.label || ""
+    )
+    .filter(Boolean);
+}
+
 export default function SkillsEditor() {
-  const { currentResume } = useResumeStore();
-  const [skills, setSkills] = useState<string[]>(currentResume?.skills || []);
+  const { currentResume, updateSkills } = useResumeStore();
+  const [skills, setSkills] = useState<string[]>(normalizeSkills(currentResume?.skills));
   const [inputValue, setInputValue] = useState("");
+
+  const setSkillList = (nextSkills: string[]) => {
+    setSkills(nextSkills);
+    updateSkills(nextSkills);
+  };
 
   const addSkill = () => {
     if (inputValue.trim() && !skills.includes(inputValue.trim())) {
-      setSkills([...skills, inputValue.trim()]);
+      setSkillList([...skills, inputValue.trim()]);
       setInputValue("");
     }
   };
 
   const removeSkill = (index: number) => {
-    setSkills(skills.filter((_, i) => i !== index));
+    setSkillList(skills.filter((_, i) => i !== index));
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -36,7 +51,7 @@ export default function SkillsEditor() {
       .split(",")
       .map((s) => s.trim())
       .filter((s) => s && !skills.includes(s));
-    setSkills([...skills, ...newSkills]);
+    setSkillList([...skills, ...newSkills]);
   };
 
   return (
@@ -88,9 +103,9 @@ export default function SkillsEditor() {
         </div>
       )}
 
-      <Button type="submit" className="w-full">
-        Save Skills
-      </Button>
+      <p className="rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-xs text-slate-400">
+        Changes update the preview automatically. Use the top Save button to save the full resume.
+      </p>
     </div>
   );
 }

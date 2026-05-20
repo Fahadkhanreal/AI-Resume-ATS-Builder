@@ -17,20 +17,14 @@ const SECTION_LABELS: Record<string, string> = {
 };
 
 export default function SectionList() {
-  const { currentResume, deleteSection, duplicateSection } = useResumeStore();
+  const { currentResume, deleteSection } = useResumeStore();
   const { activeSection, setActiveSection } = useUIStore();
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(
-    new Set(["personalInfo", "summary", "experience"])
+  const [expandedSection, setExpandedSection] = useState<string | null>(
+    "personalInfo"
   );
 
   const toggleSection = (section: string) => {
-    const newExpanded = new Set(expandedSections);
-    if (newExpanded.has(section)) {
-      newExpanded.delete(section);
-    } else {
-      newExpanded.add(section);
-    }
-    setExpandedSections(newExpanded);
+    setExpandedSection((current) => (current === section ? null : section));
   };
 
   const handleDeleteSection = (section: string) => {
@@ -39,32 +33,35 @@ export default function SectionList() {
     }
   };
 
-  const handleDuplicateSection = (section: string) => {
-    duplicateSection(section);
-  };
 
-  const sections = Object.keys(SECTION_LABELS);
+  const hiddenSections = new Set(
+    (currentResume?.sections ?? [])
+      .filter((section) => section.isVisible === false)
+      .map((section) => section.id)
+  );
+  const sections = Object.keys(SECTION_LABELS).filter(
+    (section) => !hiddenSections.has(section)
+  );
 
   return (
     <div className="space-y-2">
-      <h3 className="text-sm font-semibold text-slate-300 px-2 mb-4">Sections</h3>
+      <h3 className="mb-3 px-1 text-sm font-semibold text-slate-300 sm:mb-4 sm:px-2">Sections</h3>
 
       {sections.map((section) => (
         <div key={section} className="border border-slate-700 rounded-lg overflow-hidden">
           <SectionHeader
             title={SECTION_LABELS[section]}
-            isExpanded={expandedSections.has(section)}
+            isExpanded={expandedSection === section}
             onToggle={() => {
               setActiveSection(section);
               toggleSection(section);
             }}
             onDelete={() => handleDeleteSection(section)}
-            onDuplicate={() => handleDuplicateSection(section)}
           />
 
-          {expandedSections.has(section) && (
-            <div className="bg-slate-900 border-t border-slate-700 p-4 text-sm text-slate-400">
-              <p>Section content editor will appear here</p>
+          {expandedSection === section && (
+            <div className="border-t border-slate-700 bg-slate-900 p-3 text-xs text-slate-400 sm:p-4 sm:text-sm">
+              <p>Select this section to edit its details below.</p>
             </div>
           )}
         </div>
