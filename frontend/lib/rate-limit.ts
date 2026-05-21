@@ -31,7 +31,12 @@ export async function checkAIRateLimit(userId: string) {
     return { success: true, remaining: 10, reset: Date.now() + 60000 };
   }
 
-  return aiRateLimit.limit(userId);
+  try {
+    return await aiRateLimit.limit(userId);
+  } catch (error) {
+    console.error("AI rate limit check failed:", error);
+    return { success: true, remaining: 10, reset: Date.now() + 60000 };
+  }
 }
 
 export async function checkAPIRateLimit(userId: string) {
@@ -39,5 +44,10 @@ export async function checkAPIRateLimit(userId: string) {
     return { success: true, remaining: 60, reset: Date.now() + 60000 };
   }
 
-  return apiRateLimit.limit(userId);
+  try {
+    return await apiRateLimit.limit(userId);
+  } catch (error) {
+    console.error("API rate limit check failed:", error);
+    return { success: true, remaining: 60, reset: Date.now() + 60000 };
+  }
 }

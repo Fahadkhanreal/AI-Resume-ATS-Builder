@@ -388,8 +388,9 @@ export const useResumeStore = create<ResumeStore>((set, get) => ({
         }),
       });
 
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || "Failed to save resume");
+      const contentType = response.headers.get("content-type") || "";
+      const result = contentType.includes("application/json") ? await response.json() : null;
+      if (!response.ok) throw new Error(result?.error || `Failed to save resume (${response.status})`);
     } catch (error) {
       console.error("Error saving resume:", error);
       throw error;
