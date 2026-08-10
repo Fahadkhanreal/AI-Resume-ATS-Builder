@@ -4,7 +4,8 @@ import { renderResumeHtml } from "./templates";
 
 export async function generateResumePdf(
   data: ResumeData,
-  title: string
+  title: string,
+  templateId?: string
 ): Promise<Buffer> {
   const browser = await puppeteer.launch({
     headless: true,
@@ -13,7 +14,7 @@ export async function generateResumePdf(
 
   try {
     const page = await browser.newPage();
-    await page.setContent(renderResumeHtml(data, title), {
+    await page.setContent(renderResumeHtml(data, title, templateId), {
       waitUntil: "load",
     });
 

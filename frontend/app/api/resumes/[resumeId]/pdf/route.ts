@@ -20,7 +20,11 @@ export async function GET(
     if (!resume) throw ApiErrors.notFound("Resume");
     if (resume.userId !== user.id) throw ApiErrors.forbidden();
 
-    const pdf = await generateResumePdf(resume.data as ResumeData, resume.title);
+    const pdf = await generateResumePdf(
+      resume.data as ResumeData,
+      resume.title,
+      resume.templateId
+    );
 
     await prisma.resume.update({
       where: { id: resumeId },
