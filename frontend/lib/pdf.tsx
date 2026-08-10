@@ -6,15 +6,16 @@ import { getPdfTemplateStyle } from "@/lib/pdf/template-styles";
 
 const baseStyles = StyleSheet.create({
   page: {
-    padding: 40,
-    fontSize: 11,
+    paddingHorizontal: 36,
+    paddingVertical: 30,
+    fontSize: 10.5,
     fontFamily: "Helvetica",
   },
   header: {
-    marginBottom: 20,
+    marginBottom: 14,
     borderBottomWidth: 2,
     borderBottomColor: "#000",
-    paddingBottom: 10,
+    paddingBottom: 8,
   },
   headerRow: {
     flexDirection: "row",
@@ -22,52 +23,52 @@ const baseStyles = StyleSheet.create({
     alignItems: "center",
   },
   photo: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     objectFit: "cover",
   },
   name: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: "bold",
-    marginBottom: 5,
+    marginBottom: 3,
   },
   title: {
-    fontSize: 12,
-    color: "#666",
-    marginBottom: 8,
-  },
-  contactInfo: {
-    fontSize: 9,
+    fontSize: 11,
     color: "#666",
     marginBottom: 5,
   },
+  contactInfo: {
+    fontSize: 8.5,
+    color: "#666",
+    marginBottom: 3,
+  },
   section: {
-    marginTop: 15,
-    marginBottom: 10,
+    marginTop: 10,
+    marginBottom: 6,
   },
   sectionTitle: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: "bold",
-    marginBottom: 8,
+    marginBottom: 6,
     borderBottomWidth: 1,
     borderBottomColor: "#ccc",
-    paddingBottom: 4,
+    paddingBottom: 3,
   },
   entry: {
-    marginBottom: 10,
+    marginBottom: 7,
   },
   entryTitle: {
-    fontSize: 11,
+    fontSize: 10.5,
     fontWeight: "bold",
   },
   entrySubtitle: {
-    fontSize: 10,
+    fontSize: 9.5,
     color: "#666",
   },
   entryText: {
-    fontSize: 10,
-    marginTop: 4,
+    fontSize: 9.5,
+    marginTop: 3,
   },
   entryRow: {
     flexDirection: "row",
@@ -75,19 +76,20 @@ const baseStyles = StyleSheet.create({
     gap: 10,
   },
   bullet: {
-    marginLeft: 15,
-    marginBottom: 4,
-    fontSize: 10,
+    marginLeft: 14,
+    marginBottom: 2,
+    fontSize: 9.5,
   },
   skillsContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 8,
+    gap: 5,
   },
   skill: {
-    fontSize: 10,
+    fontSize: 9,
     backgroundColor: "#f0f0f0",
-    padding: 4,
+    paddingVertical: 2,
+    paddingHorizontal: 5,
     borderRadius: 2,
   },
   // Sidebar layout
@@ -205,7 +207,7 @@ export function PDFResume({ resume }: PDFResumeProps) {
   const renderExperience = () => {
     if (!resume.experience || resume.experience.length === 0) return null;
     return (
-      <View style={baseStyles.section}>
+      <View style={baseStyles.section} wrap={false} minPresenceAhead={30}>
         <Text style={sectionTitleStyle()}>Experience</Text>
         {resume.experience.map((exp, idx) => {
           const entry = (exp as Record<string, string | string[] | undefined>) || undefined;
@@ -254,7 +256,7 @@ export function PDFResume({ resume }: PDFResumeProps) {
   const renderEducation = () => {
     if (!resume.education || resume.education.length === 0) return null;
     return (
-      <View style={baseStyles.section}>
+      <View style={baseStyles.section} wrap={false} minPresenceAhead={30}>
         <Text style={sectionTitleStyle()}>Education</Text>
         {resume.education.map((edu, idx) => (
           <View key={idx} style={baseStyles.entry}>
@@ -276,7 +278,7 @@ export function PDFResume({ resume }: PDFResumeProps) {
   const renderProjects = () => {
     if (!resume.projects || resume.projects.length === 0) return null;
     return (
-      <View style={baseStyles.section}>
+      <View style={baseStyles.section} wrap={false} minPresenceAhead={30}>
         <Text style={sectionTitleStyle()}>Projects</Text>
         {resume.projects.map((proj, idx) => (
           <View key={idx} style={baseStyles.entry}>
@@ -301,7 +303,7 @@ export function PDFResume({ resume }: PDFResumeProps) {
   const renderCertifications = () => {
     if (!resume.certifications || resume.certifications.length === 0) return null;
     return (
-      <View style={baseStyles.section}>
+      <View style={baseStyles.section} wrap={false} minPresenceAhead={30}>
         <Text style={sectionTitleStyle()}>Certifications</Text>
         {resume.certifications.map((cert, idx) => (
           <View key={idx} style={baseStyles.entry}>
@@ -316,7 +318,7 @@ export function PDFResume({ resume }: PDFResumeProps) {
   const renderSkills = () => {
     if (!resume.skills || resume.skills.length === 0) return null;
     return (
-      <View style={baseStyles.section}>
+      <View style={baseStyles.section} wrap={false} minPresenceAhead={30}>
         <Text style={sectionTitleStyle()}>Skills</Text>
         <View style={baseStyles.skillsContainer}>
           {resume.skills.map((skill, idx) => (
@@ -338,7 +340,7 @@ export function PDFResume({ resume }: PDFResumeProps) {
   const allMainSections = () => (
     <>
       {resume.summary && (
-        <View style={baseStyles.section}>
+        <View style={baseStyles.section} wrap={false} minPresenceAhead={30}>
           <Text style={sectionTitleStyle()}>Professional Summary</Text>
           <Text style={baseStyles.entryText}>{resume.summary}</Text>
         </View>
@@ -352,21 +354,21 @@ export function PDFResume({ resume }: PDFResumeProps) {
   );
 
   const renderSidebarLayout = () => (
-    <View style={baseStyles.sidebarColumns}>
+    <View style={[baseStyles.sidebarColumns, { alignItems: "flex-start" }]}>
       <View style={baseStyles.sidebar}>
-        <View style={[baseStyles.sidebarCard, { backgroundColor: style.softBg }]}>
+        <View style={[baseStyles.sidebarCard, { backgroundColor: style.softBg }]} wrap={false}>
           {renderSkills()}
         </View>
-        <View style={[baseStyles.sidebarCard, { backgroundColor: style.softBg }]}>
+        <View style={[baseStyles.sidebarCard, { backgroundColor: style.softBg }]} wrap={false}>
           {renderEducation()}
         </View>
-        <View style={[baseStyles.sidebarCard, { backgroundColor: style.softBg }]}>
+        <View style={[baseStyles.sidebarCard, { backgroundColor: style.softBg }]} wrap={false}>
           {renderCertifications()}
         </View>
       </View>
       <View style={baseStyles.main}>
         {resume.summary && (
-          <View style={baseStyles.section}>
+          <View style={baseStyles.section} wrap={false} minPresenceAhead={30}>
             <Text style={sectionTitleStyle()}>Professional Summary</Text>
             <Text style={baseStyles.entryText}>{resume.summary}</Text>
           </View>
