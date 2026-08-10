@@ -91,7 +91,8 @@ interface PDFResumeProps {
 }
 
 export function PDFResume({ resume }: PDFResumeProps) {
-  const template = ((resume as any).templateId || resume.template || "modern") as string;
+  const template =
+    ((resume as Resume & { templateId?: string }).templateId || resume.template || "modern") as string;
   const accentColor =
     template === "creative" ? "#7e22ce" : template === "modern" ? "#059669" : "#111827";
 
@@ -159,24 +160,42 @@ export function PDFResume({ resume }: PDFResumeProps) {
         {resume.experience && resume.experience.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Experience</Text>
-            {resume.experience.map((exp, idx) => (
-              <View key={idx} style={styles.entry}>
-                <Text style={styles.entryTitle}>{exp.jobTitle}</Text>
-                <Text style={styles.entrySubtitle}>{exp.company}</Text>
-                <Text style={styles.entrySubtitle}>
-                  {exp.startDate} - {exp.endDate || "Present"}
-                </Text>
-                {exp.bullets && exp.bullets.length > 0 && (
-                  <View>
-                    {exp.bullets.map((bullet, bidx) => (
-                      <Text key={bidx} style={styles.bullet}>
-                        • {bullet}
-                      </Text>
-                    ))}
-                  </View>
-                )}
-              </View>
-            ))}
+            {resume.experience.map((exp, idx) => {
+              const entry = (exp as Record<string, string | string[] | undefined>) || undefined;
+              const expAny = entry;
+              const jobTitle = expAny.jobTitle || expAny.position || "";
+              const company = expAny.company || "";
+              const bullets = Array.isArray(expAny.bullets)
+                ? expAny.bullets.filter((b): b is string => typeof b === "string")
+                : Array.isArray(expAny.achievements)
+                  ? expAny.achievements.filter((b): b is string => typeof b === "string")
+                  : [];
+              const dateParts = [expAny.startDate, expAny.endDate || "Present"].filter(
+                Boolean
+              );
+
+              return (
+                <View key={idx} style={styles.entry}>
+                  {jobTitle && <Text style={styles.entryTitle}>{jobTitle}</Text>}
+                  {company && <Text style={styles.entrySubtitle}>{company}</Text>}
+                  {dateParts.length > 0 && (
+                    <Text style={styles.entrySubtitle}>{dateParts.join(" - ")}</Text>
+                  )}
+                  {entry.description && (
+                    <Text style={styles.entryText}>{entry.description}</Text>
+                  )}
+                  {bullets.length > 0 && (
+                    <View>
+                      {bullets.map((bullet: string, bidx: number) => (
+                        <Text key={bidx} style={styles.bullet}>
+                          • {bullet}
+                        </Text>
+                      ))}
+                    </View>
+                  )}
+                </View>
+              );
+            })}
           </View>
         )}
 
@@ -205,6 +224,44 @@ export function PDFResume({ resume }: PDFResumeProps) {
                 </Text>
               ))}
             </View>
+          </View>
+        )}
+
+        {/* Projects */}
+        {resume.projects && resume.projects.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Projects</Text>
+            {resume.projects.map((proj, idx) => (
+              <View key={idx} style={styles.entry}>
+                <Text style={styles.entryTitle}>{proj.name}</Text>
+                {proj.link && (
+                  <Text style={styles.entrySubtitle}>{proj.link}</Text>
+                )}
+                {proj.description && (
+                  <Text style={styles.entryText}>{proj.description}</Text>
+                )}
+                {proj.technologies && proj.technologies.length > 0 && (
+                  <Text style={styles.entrySubtitle}>
+                    Tech: {proj.technologies.join(", ")}
+                  </Text>
+                )}
+              </View>
+            ))}
+          </View>
+        )}
+
+        {/* Certifications */}
+        {resume.certifications && resume.certifications.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Certifications</Text>
+            {resume.certifications.map((cert, idx) => (
+              <View key={idx} style={styles.entry}>
+                <Text style={styles.entryTitle}>{cert.name}</Text>
+                {cert.issuer && (
+                  <Text style={styles.entrySubtitle}>{cert.issuer}</Text>
+                )}
+              </View>
+            ))}
           </View>
         )}
       </Page>
