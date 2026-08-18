@@ -278,24 +278,41 @@ export function PDFResume({ resume }: PDFResumeProps) {
   const renderProjects = () => {
     if (!resume.projects || resume.projects.length === 0) return null;
     return (
-      <View style={baseStyles.section} wrap={false} minPresenceAhead={30}>
+      <View style={baseStyles.section} minPresenceAhead={30}>
         <Text style={sectionTitleStyle()}>Projects</Text>
-        {resume.projects.map((proj, idx) => (
-          <View key={idx} style={baseStyles.entry}>
-            <Text style={baseStyles.entryTitle}>{proj.name}</Text>
-            <View>
-              {proj.link && <Text style={baseStyles.entrySubtitle}>{proj.link}</Text>}
-              {proj.description && (
-                <Text style={baseStyles.entryText}>{proj.description}</Text>
-              )}
-              {proj.technologies && proj.technologies.length > 0 && (
-                <Text style={baseStyles.entrySubtitle}>
-                  Tech: {proj.technologies.join(", ")}
+        {resume.projects.map((proj, idx) => {
+          const project = proj as any;
+          const projectLink = project.link || project.url || "";
+          const technologies = Array.isArray(project.technologies) ? project.technologies : [];
+
+          return (
+            <View key={idx} style={baseStyles.entry} wrap={false}>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                <Text style={baseStyles.entryTitle}>{project.name}</Text>
+                {projectLink && (
+                  <Text style={{ fontSize: 9, color: "#2563eb" }}>
+                    {projectLink}
+                  </Text>
+                )}
+              </View>
+              {project.description && (
+                <Text style={[baseStyles.entryText, { marginTop: 3, color: "#64748b" }]}>
+                  {project.description}
                 </Text>
               )}
+              {technologies.length > 0 && (
+                <View style={{ flexDirection: "row", marginTop: 3 }}>
+                  <Text style={{ fontSize: 9.5, fontFamily: "Helvetica-Bold", color: "#111827" }}>
+                    Tech:{" "}
+                  </Text>
+                  <Text style={{ fontSize: 9.5, color: "#64748b" }}>
+                    {technologies.join(", ")}
+                  </Text>
+                </View>
+              )}
             </View>
-          </View>
-        ))}
+          );
+        })}
       </View>
     );
   };

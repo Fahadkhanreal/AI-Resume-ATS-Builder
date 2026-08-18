@@ -121,12 +121,37 @@ function ProjectsSection({ resume, config }: ResumeTemplateProps) {
     <section>
       <h2 className={`mb-3 text-lg font-bold ${config.headingClass}`}>Projects</h2>
       <div className="space-y-3">
-        {resume.projects.map((project, idx) => (
-          <div key={idx}>
-            <h3 className="font-semibold text-slate-900">{project.name}</h3>
-            {project.description && <p className="text-sm text-slate-700">{project.description}</p>}
-          </div>
-        ))}
+        {resume.projects.map((project, idx) => {
+          const proj = project as any;
+          const projectLink = proj.link || proj.url;
+          const technologies = Array.isArray(proj.technologies) ? proj.technologies : [];
+
+          return (
+            <div key={idx}>
+              <div className="flex flex-wrap items-baseline gap-2">
+                <h3 className="font-semibold text-slate-900">{project.name}</h3>
+                {projectLink && (
+                  <a
+                    href={projectLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-blue-600 hover:underline"
+                  >
+                    {projectLink}
+                  </a>
+                )}
+              </div>
+              {project.description && (
+                <p className="mt-1 text-sm leading-relaxed text-slate-700">{project.description}</p>
+              )}
+              {technologies.length > 0 && (
+                <p className="mt-1 text-xs text-slate-600">
+                  <span className="font-medium">Tech:</span> {technologies.join(", ")}
+                </p>
+              )}
+            </div>
+          );
+        })}
       </div>
     </section>
   );

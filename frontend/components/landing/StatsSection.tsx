@@ -50,10 +50,17 @@ export function StatsSection() {
 
   useEffect(() => {
     let active = true;
+    let mounted = true;
 
     const fetchStats = async () => {
       try {
-        const response = await fetch("/api/stats");
+        const response = await fetch("/api/stats", {
+          cache: "no-store",
+          signal: AbortSignal.timeout(5000),
+        });
+
+        if (!mounted || !active) return;
+
         const result = await response.json();
         if (!response.ok) throw new Error(result.error || "Failed to fetch stats");
         if (!active) return;
@@ -64,14 +71,22 @@ export function StatsSection() {
           { value: result.data?.activeUsers ?? 0, label: "Active Users" },
         ]);
       } catch (error) {
-        console.error("Error fetching stats:", error);
+        if (error instanceof Error && error.name === 'TimeoutError') {
+          console.warn("Stats fetch timeout - using defaults");
+        } else {
+          console.error("Error fetching stats:", error);
+        }
       }
     };
 
-    fetchStats();
+    const timer = setTimeout(() => {
+      if (mounted) fetchStats();
+    }, 100);
 
     return () => {
       active = false;
+      mounted = false;
+      clearTimeout(timer);
     };
   }, []);
 

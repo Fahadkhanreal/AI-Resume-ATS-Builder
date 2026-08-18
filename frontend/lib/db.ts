@@ -17,7 +17,7 @@ function getPrismaClient() {
 
     globalForPrisma.prisma = new PrismaClient({
       adapter: new PrismaNeon({ connectionString }),
-      log: process.env.NODE_ENV === 'development' ? ['query'] : [],
+      log: [],
     })
   }
 

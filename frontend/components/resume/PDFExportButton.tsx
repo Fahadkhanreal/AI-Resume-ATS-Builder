@@ -16,7 +16,18 @@ export function PDFExportButton() {
 
     setLoading(true);
     try {
-      const doc = <PDFResume resume={currentResume} />;
+      // Use current state data (what's visible in editor), not stale database data
+      const resumeForPDF = {
+        ...currentResume,
+        // Ensure we're using the current editor state
+        projects: currentResume.projects || [],
+        experience: currentResume.experience || [],
+        education: currentResume.education || [],
+        skills: currentResume.skills || [],
+        certifications: currentResume.certifications || [],
+      };
+
+      const doc = <PDFResume resume={resumeForPDF} />;
       const blob = await pdf(doc).toBlob();
 
       const url = URL.createObjectURL(blob);

@@ -71,7 +71,7 @@ function renderProjectsItems(data: ResumeData): string {
       const technologies = strArr(p.technologies);
 
       return `<div class="item"><strong>${escapeHtml(name)}</strong>${
-        url ? ` - <span class="meta">${escapeHtml(url)}</span>` : ""
+        url ? `<br/><span class="meta">${escapeHtml(url)}</span>` : ""
       }${description ? `<br/>${escapeHtml(description)}` : ""}${
         technologies.length
           ? `<br/><span class="meta">Tech: ${escapeHtml(technologies.join(", "))}</span>`
