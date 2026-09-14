@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { generateJsonResponse } from "@/lib/ai/gemini";
+import { checkAIRateLimit } from "@/lib/rate-limit";
 
 const prompts: Record<string, string> = {
   summary:
@@ -20,6 +21,14 @@ export async function POST(request: NextRequest) {
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const limit = await checkAIRateLimit(userId);
+    if (!limit.success) {
+      return NextResponse.json(
+        { error: "Too many AI requests. Please try again later." },
+        { status: 429 }
+      );
     }
 
     const { text, context } = await request.json();

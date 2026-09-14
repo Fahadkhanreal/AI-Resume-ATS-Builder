@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
@@ -41,19 +41,7 @@ export default function ResumeBuilderPage() {
 
   usePreviewUpdate(200);
 
-  useEffect(() => {
-    if (!isLoaded) return;
-    if (!user) {
-      router.push("/sign-in");
-      return;
-    }
-
-    if (loadedResumeIdRef.current === resumeId) return;
-    loadedResumeIdRef.current = resumeId;
-    fetchResume();
-  }, [isLoaded, user?.id, router, resumeId]);
-
-  const fetchResume = async () => {
+  const fetchResume = useCallback(async () => {
     try {
       const response = await fetch(`/api/resumes/${resumeId}/get`);
       const result = await response.json();
@@ -65,7 +53,19 @@ export default function ResumeBuilderPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [resumeId, setCurrentResume]);
+
+  useEffect(() => {
+    if (!isLoaded) return;
+    if (!user) {
+      router.push("/sign-in");
+      return;
+    }
+
+    if (loadedResumeIdRef.current === resumeId) return;
+    loadedResumeIdRef.current = resumeId;
+    fetchResume();
+  }, [isLoaded, user, router, resumeId, fetchResume]);
 
   const handleSave = async () => {
     if (!currentResume) return;
@@ -128,7 +128,7 @@ export default function ResumeBuilderPage() {
               </Label>
               <select
                 id="template"
-                value={(currentResume as any).templateId || currentResume.template || "modern"}
+                value={currentResume.templateId || currentResume.template || "modern"}
                 onChange={(event) => updateTemplate(event.target.value)}
                 className="mt-1 w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-white outline-none transition focus:border-emerald-500"
               >

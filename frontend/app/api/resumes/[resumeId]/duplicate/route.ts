@@ -3,6 +3,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { handleApiError, successResponse } from "@/lib/errors/handlers";
 import { ApiErrors } from "@/lib/errors/api-error";
+import { canCreateResume } from "@/lib/quota";
 
 export const dynamic = "force-dynamic";
 
@@ -23,6 +24,16 @@ export async function POST(
 
     if (resume.userId !== user.id) {
       throw ApiErrors.forbidden();
+    }
+
+    const existingCount = await prisma.resume.count({
+      where: { userId: user.id },
+    });
+
+    if (!canCreateResume(existingCount)) {
+      throw ApiErrors.badRequest(
+        "Free plan limit reached (maximum 3 resumes). Please upgrade your plan to duplicate resumes."
+      );
     }
 
     const duplicated = await prisma.resume.create({

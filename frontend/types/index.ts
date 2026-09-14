@@ -1,9 +1,9 @@
-// Resume Types
 export interface Resume {
   id: string;
   userId: string;
   title: string;
   template: string;
+  templateId?: string;
   sections: Section[];
   personalInfo?: PersonalInfo;
   summary?: string;
@@ -12,6 +12,7 @@ export interface Resume {
   skills?: string[];
   projects?: ProjectEntry[];
   certifications?: CertificationEntry[];
+  data?: Record<string, unknown>;
   createdAt: Date;
   updatedAt: Date;
   atsScore?: number;

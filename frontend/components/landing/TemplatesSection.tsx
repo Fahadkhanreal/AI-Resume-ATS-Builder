@@ -32,7 +32,7 @@ export function TemplatesSection() {
   const { isSignedIn, isLoaded } = useUser();
   const [creatingTemplateId, setCreatingTemplateId] = useState<string | null>(null);
 
-  const useTemplate = async (templateId: string, templateName: string) => {
+  const handleSelectTemplate = async (templateId: string, templateName: string) => {
     if (!isLoaded) return;
 
     if (!isSignedIn) {
@@ -147,7 +147,7 @@ export function TemplatesSection() {
                     <Button
                       type="button"
                       className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700"
-                      onClick={() => useTemplate(template.id, template.name)}
+                      onClick={() => handleSelectTemplate(template.id, template.name)}
                       disabled={creatingTemplateId !== null}
                     >
                       {isCreating ? (

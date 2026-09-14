@@ -32,37 +32,46 @@ export default function DashboardPage() {
       return;
     }
 
-    fetchResumes();
-  }, [isLoaded, user?.id, router]);
+    let isMounted = true;
+    const loadResumes = async () => {
+      try {
+        const response = await fetch("/api/resumes");
+        const contentType = response.headers.get("content-type") || "";
+        const result = contentType.includes("application/json") ? await response.json() : null;
+        if (!response.ok) {
+          throw new Error(result?.error || `Failed to fetch resumes (${response.status})`);
+        }
+        const resumeList = (result?.data ?? []).map((resume: Resume, index: number) => ({
+          ...resume,
+          displayTitle:
+            resume.title && !/^New Resume$|^Resume \d+$/i.test(resume.title)
+              ? resume.title
+              : `Resume ${index + 1}`,
+        }));
+        if (isMounted) {
+          setResumes(resumeList);
+        }
+      } catch (error) {
+        console.error("Error fetching resumes:", error);
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadResumes();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isLoaded, user, router]);
 
   useEffect(() => {
     resumes.forEach((resume) => {
       router.prefetch(`/resume/${resume.id}/edit`);
     });
   }, [resumes, router]);
-
-  const fetchResumes = async () => {
-    try {
-      const response = await fetch("/api/resumes");
-      const contentType = response.headers.get("content-type") || "";
-      const result = contentType.includes("application/json") ? await response.json() : null;
-      if (!response.ok) {
-        throw new Error(result?.error || `Failed to fetch resumes (${response.status})`);
-      }
-      const resumeList = (result?.data ?? []).map((resume: Resume, index: number) => ({
-        ...resume,
-        displayTitle:
-          resume.title && !/^New Resume$|^Resume \d+$/i.test(resume.title)
-            ? resume.title
-            : `Resume ${index + 1}`,
-      }));
-      setResumes(resumeList);
-    } catch (error) {
-      console.error("Error fetching resumes:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const createNewResume = async () => {
     try {

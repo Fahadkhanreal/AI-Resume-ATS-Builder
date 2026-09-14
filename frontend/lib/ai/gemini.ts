@@ -1,22 +1,9 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { existsSync, readFileSync } from "fs";
-import { join } from "path";
 
 export function getEffectiveGeminiApiKey() {
-  return (readLocalGeminiKey() || process.env.GOOGLE_API_KEY)
+  return (process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY)
     ?.trim()
     .replace(/^['"]|['"]$/g, "");
-}
-
-function readLocalGeminiKey() {
-  const envPath = join(process.cwd(), ".env.local");
-  if (!existsSync(envPath)) return undefined;
-
-  const line = readFileSync(envPath, "utf8")
-    .split(/\r?\n/)
-    .find((entry) => entry.trim().startsWith("GOOGLE_API_KEY="));
-
-  return line?.split("=").slice(1).join("=").trim().replace(/^['"]|['"]$/g, "");
 }
 
 function getGeminiModel() {
