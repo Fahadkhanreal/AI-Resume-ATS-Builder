@@ -6,6 +6,7 @@ import { useResumeStore } from "@/lib/store/resume.store";
 import { Download, Loader } from "lucide-react";
 import { pdf } from "@react-pdf/renderer";
 import { PDFResume } from "@/lib/pdf";
+import { Resume } from "@/types";
 
 export function PDFExportButton() {
   const { currentResume, saveResume } = useResumeStore();
