@@ -45,7 +45,10 @@ export async function checkAPIRateLimit(userId: string) {
   }
 
   try {
-    return await apiRateLimit.limit(userId);
+    const timeoutPromise = new Promise<{ success: boolean; remaining: number; reset: number }>((resolve) =>
+      setTimeout(() => resolve({ success: true, remaining: 60, reset: Date.now() + 60000 }), 350)
+    );
+    return await Promise.race([apiRateLimit.limit(userId), timeoutPromise]);
   } catch (error) {
     console.error("API rate limit check failed:", error);
     return { success: true, remaining: 60, reset: Date.now() + 60000 };

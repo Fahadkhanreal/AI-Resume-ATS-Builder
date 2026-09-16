@@ -10,6 +10,21 @@ export async function getCurrentUserId(): Promise<string> {
 }
 
 export async function getCurrentUser() {
+  const { userId } = await auth();
+  if (!userId) {
+    throw new Error("Unauthorized: No user found");
+  }
+
+  // Fast path: Check local database first without slow external Clerk network requests
+  const existingUser = await prisma.user.findUnique({
+    where: { clerkId: userId },
+  });
+
+  if (existingUser) {
+    return existingUser;
+  }
+
+  // Fallback if user is not in database yet: fetch details from Clerk and create
   const user = await currentUser();
   if (!user) {
     throw new Error("Unauthorized: No user found");
@@ -33,7 +48,6 @@ export async function getCurrentUser() {
 }
 
 export async function requireAuth() {
-  const userId = await getCurrentUserId();
   const user = await getCurrentUser();
-  return { userId, user };
+  return { userId: user.clerkId, user };
 }

@@ -14,7 +14,7 @@ const personalInfoSchema = z.object({
   email: z.string().email("Invalid email").optional().or(z.literal("")),
   phone: z.string().optional(),
   location: z.string().optional(),
-  website: z.string().url("Invalid URL").optional().or(z.literal("")),
+  website: z.string().optional(),
   linkedin: z.string().optional(),
   github: z.string().optional(),
   photoUrl: z.string().optional(),
@@ -24,12 +24,13 @@ type PersonalInfoFormData = z.infer<typeof personalInfoSchema>;
 
 export default function PersonalInfoForm() {
   const { currentResume, updatePersonalInfo, saveResume } = useResumeStore();
-  const didMount = useRef(false);
+  const resumeIdRef = useRef<string | null>(null);
   const {
     register,
     handleSubmit,
     watch,
     setValue,
+    reset,
     formState: { errors },
   } = useForm<PersonalInfoFormData>({
     resolver: zodResolver(personalInfoSchema),
@@ -47,12 +48,24 @@ export default function PersonalInfoForm() {
   });
 
   useEffect(() => {
-    const subscription = watch((value) => {
-      if (!didMount.current) {
-        didMount.current = true;
-        return;
-      }
+    if (currentResume && currentResume.id !== resumeIdRef.current) {
+      resumeIdRef.current = currentResume.id;
+      reset({
+        fullName: currentResume.personalInfo?.fullName || "",
+        title: currentResume.personalInfo?.title || "",
+        email: currentResume.personalInfo?.email || "",
+        phone: currentResume.personalInfo?.phone || "",
+        location: currentResume.personalInfo?.location || "",
+        website: currentResume.personalInfo?.website || "",
+        linkedin: currentResume.personalInfo?.linkedin || "",
+        github: currentResume.personalInfo?.github || "",
+        photoUrl: currentResume.personalInfo?.photoUrl || "",
+      });
+    }
+  }, [currentResume, reset]);
 
+  useEffect(() => {
+    const subscription = watch((value) => {
       updatePersonalInfo(value as Partial<PersonalInfoFormData>);
     });
 
@@ -172,12 +185,12 @@ export default function PersonalInfoForm() {
 
       <div>
         <Label htmlFor="website" className="text-slate-300">
-          Website
+          Portfolio / Website
         </Label>
         <Input
           id="website"
-          type="url"
-          placeholder="https://johndoe.com"
+          type="text"
+          placeholder="https://yourportfolio.com or yoursite.com"
           {...register("website")}
           className="mt-1 bg-slate-700 border-slate-600 text-white placeholder:text-slate-500"
         />
@@ -186,30 +199,28 @@ export default function PersonalInfoForm() {
         )}
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div>
-          <Label htmlFor="linkedin" className="text-slate-300">
-            LinkedIn
-          </Label>
-          <Input
-            id="linkedin"
-            placeholder="linkedin.com/in/johndoe"
-            {...register("linkedin")}
-            className="mt-1 bg-slate-700 border-slate-600 text-white placeholder:text-slate-500"
-          />
-        </div>
+      <div>
+        <Label htmlFor="linkedin" className="text-slate-300">
+          LinkedIn
+        </Label>
+        <Input
+          id="linkedin"
+          placeholder="linkedin.com/in/johndoe"
+          {...register("linkedin")}
+          className="mt-1 bg-slate-700 border-slate-600 text-white placeholder:text-slate-500"
+        />
+      </div>
 
-        <div>
-          <Label htmlFor="github" className="text-slate-300">
-            GitHub
-          </Label>
-          <Input
-            id="github"
-            placeholder="github.com/johndoe"
-            {...register("github")}
-            className="mt-1 bg-slate-700 border-slate-600 text-white placeholder:text-slate-500"
-          />
-        </div>
+      <div>
+        <Label htmlFor="github" className="text-slate-300">
+          GitHub
+        </Label>
+        <Input
+          id="github"
+          placeholder="github.com/johndoe"
+          {...register("github")}
+          className="mt-1 bg-slate-700 border-slate-600 text-white placeholder:text-slate-500"
+        />
       </div>
 
       <p className="rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-xs text-slate-400">

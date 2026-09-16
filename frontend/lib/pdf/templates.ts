@@ -162,14 +162,21 @@ export function renderResumeHtml(data: ResumeData, title: string, templateId?: s
     .header-box h1 { color: ${style.headerText || "#fff"}; margin: 0 0 2px; }
     .header-box .meta { color: ${style.headerText || "#fff"}; opacity: 0.9; }`
       : ""}
-    .contact-line { margin-bottom: 2px; }
+    .contact-line { margin-top: 4px; font-size: 11px; line-height: 1.4; }
   </style>
 </head>
 <body>
   <div class="header-box">
     <h1>${escapeHtml(personal?.fullName || title)}</h1>
     ${personal?.title ? `<p class="meta">${escapeHtml(personal.title)}</p>` : ""}
-    <div class="meta contact-line">${escapeHtml([personal?.email, personal?.phone, personal?.location].filter(Boolean).join(" | "))}</div>
+    <div class="meta contact-line">
+      ${personal?.email ? `<div>Email: ${escapeHtml(personal.email)}</div>` : ""}
+      ${personal?.phone ? `<div>Phone: ${escapeHtml(personal.phone)}</div>` : ""}
+      ${personal?.location ? `<div>Location: ${escapeHtml(personal.location)}</div>` : ""}
+      ${personal?.website ? `<div>Portfolio: ${escapeHtml(personal.website)}</div>` : ""}
+      ${personal?.linkedin ? `<div>LinkedIn: ${escapeHtml(personal.linkedin)}</div>` : ""}
+      ${personal?.github ? `<div>GitHub: ${escapeHtml(personal.github)}</div>` : ""}
+    </div>
   </div>
   ${bodyContent}
 </body>

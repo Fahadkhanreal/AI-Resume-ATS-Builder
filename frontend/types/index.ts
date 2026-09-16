@@ -44,16 +44,18 @@ export interface Entry {
 }
 
 export interface PersonalInfo extends Entry {
-  firstName: string;
-  lastName: string;
-  title: string;
-  email: string;
-  phone: string;
-  location: string;
+  fullName?: string;
+  firstName?: string;
+  lastName?: string;
+  title?: string;
+  email?: string;
+  phone?: string;
+  location?: string;
   website?: string;
   linkedin?: string;
   github?: string;
   photoUrl?: string;
+  summary?: string;
 }
 
 export interface ExperienceEntry extends Entry {

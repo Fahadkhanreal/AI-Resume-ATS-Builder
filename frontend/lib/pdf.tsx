@@ -110,6 +110,11 @@ const baseStyles = StyleSheet.create({
   },
 });
 
+function cleanDisplayUrl(url?: string): string {
+  if (!url) return "";
+  return url.trim().replace(/^https?:\/\//i, "").replace(/^www\./i, "").replace(/\/$/, "");
+}
+
 interface PDFResumeProps {
   resume: Resume;
 }
@@ -128,6 +133,14 @@ export function PDFResume({ resume }: PDFResumeProps) {
   const contactTextColor = isDarkHeader ? (style.headerText || "#ffffff") : "#666";
   const headerBorderColor = !isDarkHeader ? accentColor : style.headerBg || accentColor;
 
+  const data = (resume as any).data ?? {};
+  const personalInfo = resume.personalInfo ?? data.personalInfo ?? {};
+  const photoUrl = personalInfo?.photoUrl;
+
+  const website = personalInfo?.website?.trim();
+  const linkedin = personalInfo?.linkedin?.trim();
+  const github = personalInfo?.github?.trim();
+
   const renderHeader = () => (
     <View
       style={[
@@ -141,8 +154,8 @@ export function PDFResume({ resume }: PDFResumeProps) {
       ]}
     >
       <View style={baseStyles.headerRow}>
-        {resume.personalInfo?.photoUrl && (
-          <Image src={resume.personalInfo.photoUrl} style={baseStyles.photo} />
+        {photoUrl && (
+          <Image src={photoUrl} style={baseStyles.photo} />
         )}
         <View style={{ flex: 1 }}>
           <Text
@@ -151,7 +164,7 @@ export function PDFResume({ resume }: PDFResumeProps) {
               { color: isDarkHeader ? headerTextColor : accentColor },
             ]}
           >
-            {resume.personalInfo?.fullName || "Your Name"}
+            {personalInfo?.fullName || "Your Name"}
           </Text>
           <Text
             style={[
@@ -159,37 +172,37 @@ export function PDFResume({ resume }: PDFResumeProps) {
               { color: titleTextColor },
             ]}
           >
-            {resume.personalInfo?.title || "Professional Title"}
+            {personalInfo?.title || "Professional Title"}
           </Text>
-          <View>
-            {resume.personalInfo?.email && (
+          <View style={{ marginTop: 2 }}>
+            {personalInfo?.email && (
               <Text style={[baseStyles.contactInfo, { color: contactTextColor }]}>
-                Email: {resume.personalInfo.email}
+                Email: {personalInfo.email}
               </Text>
             )}
-            {resume.personalInfo?.phone && (
+            {personalInfo?.phone && (
               <Text style={[baseStyles.contactInfo, { color: contactTextColor }]}>
-                Phone: {resume.personalInfo.phone}
+                Phone: {personalInfo.phone}
               </Text>
             )}
-            {resume.personalInfo?.location && (
+            {personalInfo?.location && (
               <Text style={[baseStyles.contactInfo, { color: contactTextColor }]}>
-                Location: {resume.personalInfo.location}
+                Location: {personalInfo.location}
               </Text>
             )}
-            {resume.personalInfo?.website && (
+            {website && (
               <Text style={[baseStyles.contactInfo, { color: contactTextColor }]}>
-                Website: {resume.personalInfo.website}
+                Portfolio: {cleanDisplayUrl(website)}
               </Text>
             )}
-            {resume.personalInfo?.linkedin && (
+            {linkedin && (
               <Text style={[baseStyles.contactInfo, { color: contactTextColor }]}>
-                LinkedIn: {resume.personalInfo.linkedin}
+                LinkedIn: {cleanDisplayUrl(linkedin).startsWith("linkedin.com") ? cleanDisplayUrl(linkedin) : `linkedin.com/in/${cleanDisplayUrl(linkedin)}`}
               </Text>
             )}
-            {resume.personalInfo?.github && (
+            {github && (
               <Text style={[baseStyles.contactInfo, { color: contactTextColor }]}>
-                GitHub: {resume.personalInfo.github}
+                GitHub: {cleanDisplayUrl(github).startsWith("github.com") ? cleanDisplayUrl(github) : `github.com/${cleanDisplayUrl(github)}`}
               </Text>
             )}
           </View>

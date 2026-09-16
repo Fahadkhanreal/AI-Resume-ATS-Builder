@@ -47,6 +47,7 @@ export async function PATCH(
 
     const resume = await prisma.resume.findUnique({
       where: { id: resumeId },
+      select: { userId: true },
     });
 
     if (!resume) {

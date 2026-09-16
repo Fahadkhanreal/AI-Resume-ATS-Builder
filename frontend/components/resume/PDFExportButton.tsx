@@ -8,7 +8,7 @@ import { pdf } from "@react-pdf/renderer";
 import { PDFResume } from "@/lib/pdf";
 
 export function PDFExportButton() {
-  const { currentResume } = useResumeStore();
+  const { currentResume, saveResume } = useResumeStore();
   const [loading, setLoading] = useState(false);
 
   const handleExport = async () => {
@@ -16,15 +16,26 @@ export function PDFExportButton() {
 
     setLoading(true);
     try {
-      // Use current state data (what's visible in editor), not stale database data
-      const resumeForPDF = {
+      // Trigger background auto-save without blocking instant PDF generation
+      if (currentResume.id) {
+        saveResume(currentResume.id).catch((saveError) => {
+          console.warn("Background auto-save on PDF export:", saveError);
+        });
+      }
+
+      const data = (currentResume as any).data ?? {};
+      const personalInfo = currentResume.personalInfo ?? data.personalInfo ?? {};
+
+      const resumeForPDF: Resume = {
         ...currentResume,
-        // Ensure we're using the current editor state
-        projects: currentResume.projects || [],
-        experience: currentResume.experience || [],
-        education: currentResume.education || [],
-        skills: currentResume.skills || [],
-        certifications: currentResume.certifications || [],
+        personalInfo,
+        summary: currentResume.summary || personalInfo.summary || data.personalInfo?.summary || "",
+        projects: currentResume.projects || data.projects || [],
+        experience: currentResume.experience || data.experience || [],
+        education: currentResume.education || data.education || [],
+        skills: currentResume.skills || data.skills || [],
+        certifications: currentResume.certifications || data.certifications || [],
+        templateId: (currentResume as any).templateId || currentResume.template || "modern",
       };
 
       const doc = <PDFResume resume={resumeForPDF} />;

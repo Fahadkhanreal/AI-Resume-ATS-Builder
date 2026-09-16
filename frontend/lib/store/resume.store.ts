@@ -1,72 +1,79 @@
 import { create } from "zustand";
 import { Resume, Section, Entry } from "@/types";
 
-function hasObjectContent(value: any) {
-  return value && Object.values(value).some((field) => {
-    if (Array.isArray(field)) return field.length > 0;
-    return field !== undefined && field !== null && field !== "";
-  });
-}
-
 function preferFilledArray(primary: any, fallback: any) {
   return Array.isArray(primary) && primary.length > 0 ? primary : fallback ?? [];
-}
-
-function preferFilledObject(primary: any, fallback: any) {
-  return hasObjectContent(primary) ? primary : fallback ?? {};
-}
-
-function withoutEmptyValues(value: any) {
-  return Object.fromEntries(
-    Object.entries(value ?? {}).filter(
-      ([, field]) => field !== undefined && field !== null && field !== ""
-    )
-  );
-}
-
-function mergePersonalInfo(existingData: any, resume: Resume, override?: any) {
-  return {
-    ...withoutEmptyValues(existingData.personalInfo),
-    ...withoutEmptyValues(resume.personalInfo),
-    ...withoutEmptyValues(override),
-  };
 }
 
 function getCompleteResumeData(resume: Resume, overrides: Record<string, any> = {}) {
   const existingData = (resume as any).data ?? {};
 
+  const personalInfo =
+    overrides.personalInfo !== undefined
+      ? overrides.personalInfo
+      : {
+          ...(existingData.personalInfo ?? {}),
+          ...(resume.personalInfo ?? {}),
+        };
+
   return {
     ...existingData,
-    personalInfo: mergePersonalInfo(existingData, resume, overrides.personalInfo),
+    personalInfo,
     experience:
       overrides.experience ??
-      preferFilledArray(existingData.experience, resume.experience),
+      resume.experience ??
+      existingData.experience ??
+      [],
     education:
       overrides.education ??
-      preferFilledArray(existingData.education, resume.education),
+      resume.education ??
+      existingData.education ??
+      [],
     skills:
-      overrides.skills ?? preferFilledArray(existingData.skills, resume.skills),
+      overrides.skills ??
+      resume.skills ??
+      existingData.skills ??
+      [],
     projects:
-      overrides.projects ?? preferFilledArray(existingData.projects, resume.projects),
+      overrides.projects ??
+      resume.projects ??
+      existingData.projects ??
+      [],
     certifications:
       overrides.certifications ??
-      preferFilledArray(existingData.certifications, resume.certifications),
+      resume.certifications ??
+      existingData.certifications ??
+      [],
   };
 }
 
 function normalizeResume(resume: Resume): Resume {
-  const data = getCompleteResumeData(resume);
+  const data = (resume as any).data ?? {};
+  const personalInfo = {
+    ...(data.personalInfo ?? {}),
+    ...(resume.personalInfo ?? {}),
+  };
 
-  return {
-    ...resume,
-    personalInfo: preferFilledObject(resume.personalInfo, data.personalInfo),
-    summary: resume.summary || data.personalInfo?.summary || "",
+  const completeData = {
+    ...data,
+    personalInfo,
     experience: preferFilledArray(resume.experience, data.experience),
     education: preferFilledArray(resume.education, data.education),
     skills: preferFilledArray(resume.skills, data.skills),
     projects: preferFilledArray(resume.projects, data.projects),
     certifications: preferFilledArray(resume.certifications, data.certifications),
-    data,
+  };
+
+  return {
+    ...resume,
+    personalInfo,
+    summary: resume.summary ?? personalInfo.summary ?? data.personalInfo?.summary ?? "",
+    experience: completeData.experience,
+    education: completeData.education,
+    skills: completeData.skills,
+    projects: completeData.projects,
+    certifications: completeData.certifications,
+    data: completeData,
   } as Resume;
 }
 
@@ -107,7 +114,8 @@ export const useResumeStore = create<ResumeStore>((set, get) => ({
         Object.entries(info ?? {}).filter(([, value]) => value !== undefined)
       ) as Partial<Resume["personalInfo"]>;
       const personalInfo = {
-        ...state.currentResume.personalInfo,
+        ...((state.currentResume as any).data?.personalInfo ?? {}),
+        ...(state.currentResume.personalInfo ?? {}),
         ...safeInfo,
       } as Resume["personalInfo"];
 
